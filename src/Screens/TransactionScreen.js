@@ -1,0 +1,151 @@
+import { StyleSheet,View,Text,TouchableOpacity,FlatList } from "react-native"
+import {RecentTransactions} from "../Data/Data"
+import { FontAwesome } from "@expo/vector-icons"
+
+export default TransactionsScreen = () => {
+  return (
+    <View style={styles.screenContainer}>
+      <View style={styles.screenHeader}>
+        <Text style={styles.screenTitle}>Transactions</Text>
+      </View>
+
+      <View style={styles.transactionFilters}>
+        <TouchableOpacity style={[styles.filterButton, styles.activeFilterButton]}>
+          <Text style={styles.activeFilterText}>All</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.filterButton}>
+          <Text style={styles.filterText}>Income</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.filterButton}>
+          <Text style={styles.filterText}>Expense</Text>
+        </TouchableOpacity>
+      </View>
+
+      <FlatList
+        data={RecentTransactions}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity style={styles.transactionItemFull}>
+            <View style={styles.transactionIconContainer}>
+              <FontAwesome
+                name={item.type === "expense" ? "arrow-up" : "arrow-down"}
+                size={16}
+                color={item.type === "expense" ? "#ef4444" : "#10b981"}
+              />
+            </View>
+            <View style={styles.transactionDetails}>
+              <Text style={styles.transactionTitle}>{item.title}</Text>
+              <Text style={styles.transactionDate}>{item.date}</Text>
+            </View>
+            <View style={styles.transactionRightContent}>
+              <Text
+                style={[
+                  styles.transactionAmount,
+                  {
+                    color: item.type === "expense" ? "#ef4444" : "#10b981",
+                  },
+                ]}
+              >
+                {item.type === "expense" ? "-" : "+"}${Math.abs(item.amount).toFixed(2)}
+              </Text>
+              <Text style={styles.transactionCategory}>{item.category}</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+        contentContainerStyle={{ paddingBottom: 80 }}
+      />
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+    screenContainer: {
+      flex: 1,
+      backgroundColor: "#f5f5f5",
+      paddingVertical:50  
+    },
+    screenHeader: {
+        backgroundColor: "#fff",
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: "#e5e7eb",
+      },
+      screenTitle: {
+        fontSize: 20,
+        fontWeight: "bold",
+        color: "#333",
+      },
+      transactionFilters: {
+        flexDirection: "row",
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        backgroundColor: "#fff",
+        marginBottom: 8,
+      },
+      filterButton: {
+        paddingHorizontal: 16,
+        paddingVertical: 6,
+        borderRadius: 20,
+        marginRight: 8,
+      },
+      activeFilterButton: {
+        backgroundColor: "#dc2626",
+      },
+      filterText: {
+        color: "#666",
+      },
+      activeFilterText: {
+        color: "#fff",
+        fontWeight: "500",
+      },
+      transactionItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#fff",
+        borderRadius: 12,
+        padding: 12,
+        marginBottom: 8,
+      },
+      transactionIconContainer: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: "#f3f4f6",
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 12,
+      },
+      transactionDetails: {
+        flex: 1,
+      },
+      transactionTitle: {
+        fontSize: 16,
+        fontWeight: "500",
+        color: "#333",
+      },
+      transactionDate: {
+        fontSize: 12,
+        color: "#666",
+        marginTop: 2,
+      },
+      transactionAmount: {
+        fontSize: 16,
+        fontWeight: "600",
+      },
+      transactionItemFull: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#fff",
+        padding: 20,
+        marginBottom: 1,
+      },
+      transactionRightContent: {
+        alignItems: "flex-end",
+      },
+      transactionCategory: {
+        fontSize: 12,
+        color: "#666",
+        marginTop: 2,
+      },
+})
