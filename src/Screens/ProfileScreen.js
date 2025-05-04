@@ -1,7 +1,10 @@
 import { ScrollView, View, Text,Image,TouchableOpacity,StyleSheet } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
+import { useNavigation } from "@react-navigation/native"
 
 const ProfileScreen = () => {
+  const navigation=useNavigation()
+
   return (
     <ScrollView style={styles.screenContainer}>
       <View style={styles.profileHeader}>
@@ -28,22 +31,17 @@ const ProfileScreen = () => {
 
       <View style={styles.profileSection}>
         <Text style={styles.profileSectionTitle}>Account Settings</Text>
-        <TouchableOpacity style={styles.profileMenuItem}>
+        <TouchableOpacity style={styles.profileMenuItem} onPress={()=>navigation.navigate('PersonalInfoScreen')}>
           <FontAwesome name="user" size={20} color="#dc2626" style={styles.profileMenuIcon} />
           <Text style={styles.profileMenuText}>Personal Information</Text>
           <FontAwesome name="chevron-right" size={16} color="#666" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.profileMenuItem}>
-          <FontAwesome name="credit-card" size={20} color="#dc2626" style={styles.profileMenuIcon} />
-          <Text style={styles.profileMenuText}>Payment Methods</Text>
-          <FontAwesome name="chevron-right" size={16} color="#666" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.profileMenuItem}>
+        <TouchableOpacity style={styles.profileMenuItem} onPress={()=>navigation.navigate('NotificationScreen')}>
           <FontAwesome name="bell" size={20} color="#dc2626" style={styles.profileMenuIcon} />
           <Text style={styles.profileMenuText}>Notifications</Text>
           <FontAwesome name="chevron-right" size={16} color="#666" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.profileMenuItem}>
+        <TouchableOpacity style={styles.profileMenuItem} onPress={()=>navigation.navigate('SecurityScreen')}>
           <FontAwesome name="lock" size={20} color="#dc2626" style={styles.profileMenuIcon} />
           <Text style={styles.profileMenuText}>Security</Text>
           <FontAwesome name="chevron-right" size={16} color="#666" />
@@ -52,12 +50,12 @@ const ProfileScreen = () => {
 
       <View style={styles.profileSection}>
         <Text style={styles.profileSectionTitle}>Support</Text>
-        <TouchableOpacity style={styles.profileMenuItem}>
+        <TouchableOpacity style={styles.profileMenuItem} onPress={()=>navigation.navigate('HelpCenterScreen')}>
           <FontAwesome name="question-circle" size={20} color="#dc2626" style={styles.profileMenuIcon} />
           <Text style={styles.profileMenuText}>Help Center</Text>
           <FontAwesome name="chevron-right" size={16} color="#666" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.profileMenuItem}>
+        <TouchableOpacity style={styles.profileMenuItem} onPress={()=>navigation.navigate('ContactSupportScreen')}>
           <FontAwesome name="comment" size={20} color="#dc2626" style={styles.profileMenuIcon} />
           <Text style={styles.profileMenuText}>Contact Support</Text>
           <FontAwesome name="chevron-right" size={16} color="#666" />
@@ -78,7 +76,7 @@ const styles = StyleSheet.create({
     screenContainer: {
       flex: 1,
       backgroundColor: "#f5f5f5",
-      paddingVertical:50,
+      paddingVertical:30,
       },
       profileHeader: {
         backgroundColor: "#fff",

@@ -2,8 +2,18 @@ import { StyleSheet, View, Text, TouchableOpacity, ScrollView} from "react-nativ
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons"
 import {RecentTransactions, QuickActions} from "../Data/Data";
 import { PaymentOptions } from "../Data/Data";
+import { useNavigation } from "@react-navigation/native";
 
-export default HomeScreen = () => {
+export default HomeScreen = ({ setActiveTab }) => {
+  const navigation = useNavigation()
+  
+  const handleQuickAction = (action) => {
+    if (action.screen === 'transactions' || action.screen === 'profile') {
+      setActiveTab(action.screen);
+    } else {
+      navigation.navigate(action.screen);
+    }
+  };
   return (
     <ScrollView style={styles.screenContainer}>
       <View style={styles.header}>
@@ -11,7 +21,7 @@ export default HomeScreen = () => {
           <Text style={styles.welcomeText}>Welcome back,</Text>
           <Text style={styles.userName}>Alex Johnson</Text>
         </View>
-        <TouchableOpacity style={styles.notificationButton}>
+        <TouchableOpacity style={styles.notificationButton} onPress={()=>navigation.navigate('NotificationScreen')}>
           <FontAwesome name="bell" size={24} color="#333" />
           <View style={styles.notificationBadge}>
             <Text style={styles.notificationBadgeText}>2</Text>
@@ -25,17 +35,13 @@ export default HomeScreen = () => {
           <Text style={styles.balanceLabel}>Total Balance</Text>
           <Text style={styles.balanceAmount}>$1,245.80</Text>
           <View style={styles.balanceActions}>
-            <TouchableOpacity style={styles.balanceActionButton}>
+            <TouchableOpacity style={styles.balanceActionButton} onPress={()=>navigation.navigate('TransferMoneyScreen')}>
               <FontAwesome name="arrow-up" size={16} color="#fff" />
               <Text style={styles.balanceActionText}>Send</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.balanceActionButton}>
+            <TouchableOpacity style={styles.balanceActionButton} onPress={()=>navigation.navigate('WithdrawMoneyScreen')}>
               <FontAwesome name="arrow-down" size={16} color="#fff" />
               <Text style={styles.balanceActionText}>Request</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.balanceActionButton}>
-              <FontAwesome name="qrcode" size={16} color="#fff" />
-              <Text style={styles.balanceActionText}>Scan</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -45,7 +51,7 @@ export default HomeScreen = () => {
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.quickActions}>
           {QuickActions.map((action) => (
-            <TouchableOpacity key={action.id} style={styles.quickActionItem}>
+            <TouchableOpacity key={action.id} style={styles.quickActionItem}  onPress={() => handleQuickAction(action)}>
               <View style={styles.quickActionIcon}>
                 <FontAwesome name={action.icon} size={20} color="#dc2626" />
               </View>
@@ -59,7 +65,7 @@ export default HomeScreen = () => {
         <Text style={styles.sectionTitle}>College Payments</Text>
         <View style={styles.paymentOptionsGrid}>
           {PaymentOptions.map((option) => (
-            <TouchableOpacity key={option.id} style={styles.paymentOption}>
+            <TouchableOpacity key={option.id} style={styles.paymentOption} onPress={()=>navigation.navigate('TransferMoneyScreen')}>
               <View style={styles.paymentOptionIcon}>
                 <MaterialIcons name={option.icon} size={24} color="#dc2626" />
               </View>
@@ -72,7 +78,7 @@ export default HomeScreen = () => {
       <View style={styles.recentTransactionsContainer}>
         <View style={styles.sectionTitleRow}>
           <Text style={styles.sectionTitle}>Recent Transactions</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => setActiveTab("transactions")}>
             <Text style={styles.viewAllText}>View All</Text>
           </TouchableOpacity>
         </View>

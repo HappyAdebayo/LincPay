@@ -10,30 +10,26 @@ export default function App() {
   const navigation=useNavigation()
 
   const handleSignUp = () => {
+    navigation.navigate('ProfileSetupScreen')
     console.log({ username, password, confirmPassword })
-    // Add your sign up logic here
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.formContainer}>
-          {/* Red corner decoration */}
           <View style={styles.topLeftCorner} />
 
-          {/* Login link */}
           <TouchableOpacity style={styles.loginLink} onPress={()=>navigation.navigate('Login')}>
             <Text style={styles.loginLinkText}>LOGIN</Text>
           </TouchableOpacity>
 
           <View style={styles.content}>
-            {/* Header */}
             <Text style={styles.signUpTitle}>Sign Up</Text>
             <Text style={styles.signUpDescription}>
               Sign up to find your desired job, connect with other skilled professionals, learn up and earn
             </Text>
 
-            {/* Form */}
             <View style={styles.form}>
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Username</Text>
@@ -72,7 +68,6 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
-            {/* Social Login */}
             <View style={styles.socialLoginContainer}>
               <TouchableOpacity style={styles.socialButton}>
                 <FontAwesome name="facebook" size={20} color="#3b5998" style={styles.socialIcon} />
@@ -90,7 +85,6 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
-            {/* Terms */}
             <Text style={styles.termsText}>
               By continuing, you agree to our <Text style={styles.termsLink}>Terms and Conditions</Text> and have read
               our <Text style={styles.termsLink}>Privacy Policy</Text>

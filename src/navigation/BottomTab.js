@@ -11,13 +11,13 @@ export default function BottomTab() {
   const renderScreen = () => {
     switch (activeTab) {
       case "home":
-        return <HomeScreen />
+        return <HomeScreen  setActiveTab={setActiveTab}/>
       case "transactions":
-        return <TransactionsScreen />
+        return <TransactionsScreen setActiveTab={setActiveTab}/>
       case "profile":
-        return <ProfileScreen />
+        return <ProfileScreen setActiveTab={setActiveTab}/>
       default:
-        return <HomeScreen />
+        return <HomeScreen setActiveTab={setActiveTab}/>
     }
   }
 

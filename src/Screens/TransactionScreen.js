@@ -1,8 +1,19 @@
 import { StyleSheet,View,Text,TouchableOpacity,FlatList } from "react-native"
 import {RecentTransactions} from "../Data/Data"
 import { FontAwesome } from "@expo/vector-icons"
+import { useState } from "react"
 
 export default TransactionsScreen = () => {
+  const [selectedFilter, setSelectedFilter] = useState("all");
+
+  const filteredTransactions = RecentTransactions.filter((item) => {
+    if (selectedFilter === "all") {
+      return true;
+    } else {
+      return item.type === selectedFilter;
+    }
+  });
+
   return (
     <View style={styles.screenContainer}>
       <View style={styles.screenHeader}>
@@ -10,19 +21,28 @@ export default TransactionsScreen = () => {
       </View>
 
       <View style={styles.transactionFilters}>
-        <TouchableOpacity style={[styles.filterButton, styles.activeFilterButton]}>
-          <Text style={styles.activeFilterText}>All</Text>
+        <TouchableOpacity
+          style={[styles.filterButton, selectedFilter === "all" && styles.activeFilterButton]}
+          onPress={() => setSelectedFilter("all")}
+        >
+          <Text style={selectedFilter === "all" ? styles.activeFilterText : styles.filterText}>All</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.filterButton}>
-          <Text style={styles.filterText}>Income</Text>
+        <TouchableOpacity
+          style={[styles.filterButton, selectedFilter === "income" && styles.activeFilterButton]}
+          onPress={() => setSelectedFilter("income")}
+        >
+          <Text style={selectedFilter === "income" ? styles.activeFilterText : styles.filterText}>Income</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.filterButton}>
-          <Text style={styles.filterText}>Expense</Text>
+        <TouchableOpacity
+          style={[styles.filterButton, selectedFilter === "expense" && styles.activeFilterButton]}
+          onPress={() => setSelectedFilter("expense")}
+        >
+          <Text style={selectedFilter === "expense" ? styles.activeFilterText : styles.filterText}>Expense</Text>
         </TouchableOpacity>
       </View>
 
       <FlatList
-        data={RecentTransactions}
+        data={filteredTransactions}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.transactionItemFull}>
