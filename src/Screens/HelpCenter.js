@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, ScrollView, TextInput, FlatList } from "react-native"
+import { StyleSheet, View, Text, Platform, TouchableOpacity, SafeAreaView, ScrollView, TextInput, FlatList } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
 import { Categories,Faqs } from "../Data/Data"
 import { useNavigation } from "@react-navigation/native"
@@ -121,7 +121,7 @@ export default function HelpCenterScreen() {
 
           <View style={styles.contactSection}>
             <Text style={styles.sectionTitle}>Need More Help?</Text>
-            <TouchableOpacity style={styles.contactCard}>
+            <TouchableOpacity style={styles.contactCard} onPress={()=>navigation.navigate('ContactSupportScreen')}>
               <View style={styles.contactCardIcon}>
                 <FontAwesome name="comments" size={24} color="#dc2626" />
               </View>
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize:Platform.OS === 'ios' ? 15 : 20,
     fontWeight: "bold",
     color: "#333",
   },
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize:Platform.OS === 'ios' ? 12 : 16,
     color: "#333",
   },
   clearButton: {
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: Platform.OS === 'ios' ? 12 : 18,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 16,
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   categoryTitle: {
-    fontSize: 14,
+    fontSize:Platform.OS === 'ios' ? 12 : 14,
     color: "#333",
     textAlign: "center",
   },
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   faqQuestionText: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12 : 16,
     fontWeight: "600",
     color: "#333",
     flex: 1,
@@ -312,9 +312,9 @@ const styles = StyleSheet.create({
     borderTopColor: "#f3f4f6",
   },
   faqAnswerText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 :14,
     color: "#666",
-    lineHeight: 20,
+    lineHeight: Platform.OS === 'ios' ? 17 : 20,
   },
   faqFeedback: {
     flexDirection: "row",
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#f3f4f6",
   },
   faqFeedbackText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14,
     color: "#666",
   },
   faqFeedbackButtons: {
@@ -349,13 +349,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   noResultsTitle: {
-    fontSize: 18,
+    fontSize:Platform.OS === 'ios' ? 12 : 18,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 8,
   },
   noResultsText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 :14,
     color: "#666",
     textAlign: "center",
     lineHeight: 20,
@@ -389,13 +389,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contactCardTitle: {
-    fontSize: 16,
+    fontSize:Platform.OS === 'ios' ? 12 : 16,
     fontWeight: "600",
     color: "#333",
     marginBottom: 4,
   },
   contactCardText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 :14,
     color: "#666",
   },
 })

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert } from "react-native"
+import { StyleSheet,Platform, View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   },
   loginLinkText: {
     color: "#dc2626",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
     fontWeight: "600",
   },
   content: {
@@ -115,13 +115,13 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#dc2626",
-    fontSize: 28,
+    fontSize: Platform.OS === 'ios' ? 23 : 28, 
     fontWeight: "bold",
     marginTop: 120,
   },
   description: {
     color: "#666",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14,
     marginTop: 8,
     marginBottom: 24,
     maxWidth: "90%",
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: "#dc2626",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14,
     fontWeight: "500",
     marginBottom: 6,
   },
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     borderColor: "#e2e8f0",
     borderRadius: 6,
     padding: 12,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16,
     backgroundColor: "#fff",
   },
   button: {
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16, 
     fontWeight: "600",
   },
   infoContainer: {
@@ -173,11 +173,12 @@ const styles = StyleSheet.create({
   },
   infoText: {
     color: "#666",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14,
     flex: 1,
   },
   termsText: {
     fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10 : 12, 
     color: "#666",
     textAlign: "center",
   },

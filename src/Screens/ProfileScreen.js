@@ -1,21 +1,64 @@
-import { ScrollView, View, Text,Image,TouchableOpacity,StyleSheet } from "react-native"
+import { ScrollView, View,Platform,Alert, Text,Image,TouchableOpacity,StyleSheet,ActivityIndicator } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect,useState } from "react";
 
 const ProfileScreen = () => {
   const navigation=useNavigation()
+  const [user, setUser] = useState(null);
+  
+const handleLogout = async () => {
+  try {
+    await AsyncStorage.removeItem('user');
+    Alert.alert('Success', 'You have been logged out.');
 
+    navigation.replace('Login');
+  } catch (error) {
+    console.error('Error removing user data from AsyncStorage:', error);
+    Alert.alert('Error', 'Failed to log out. Please try again.');
+  }
+};
+
+useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const jsonValue = await AsyncStorage.getItem('user');
+        if (jsonValue != null) {
+          const userData = JSON.parse(jsonValue);
+          console.log('User details:', userData);
+          setUser(userData);
+        } else {
+          console.log('No user data found in AsyncStorage');
+        }
+      } catch (error) {
+        console.error('Error reading user data from AsyncStorage:', error);
+      }
+    };
+
+    fetchUserDetails();
+  }, []);
+
+
+  if (!user) {
+  return (
+    <View style={{flexDirection:'row',justifyContent:'center', alignItems:'center'}}>
+      <ActivityIndicator size="large" color="#dc2626" /> 
+    </View>
+  );
+}
+  
   return (
     <ScrollView style={styles.screenContainer}>
       <View style={styles.profileHeader}>
         <View style={styles.profileImageContainer}>
-          <Image source={{ uri: "https://randomuser.me/api/portraits/men/32.jpg" }} style={styles.profileImage} />
-          <TouchableOpacity style={styles.editProfileButton}>
+          <Image source={{ uri: `http://192.168.74.1/lincpay_backend/Student_images/${user.profile_image}` }} style={styles.profileImage} />
+          <TouchableOpacity style={styles.editProfileButton} onPress={()=>navigation.navigate('PersonalInfoScreen')}>
             <FontAwesome name="pencil" size={16} color="#fff" />
           </TouchableOpacity>
         </View>
-        <Text style={styles.profileName}>Alex Johnson</Text>
-        <Text style={styles.profileEmail}>alex.johnson@lincolncollege.edu</Text>
+        <Text style={styles.profileName}>{user.full_name}</Text>
+        <Text style={styles.profileEmail}>{user.email}</Text>
         <View style={styles.profileStats}>
           <View style={styles.profileStat}>
             <Text style={styles.profileStatValue}>$1,245.80</Text>
@@ -62,7 +105,7 @@ const ProfileScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.logoutButton}>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <FontAwesome name="sign-out" size={20} color="#fff" style={{ marginRight: 8 }} />
         <Text style={styles.logoutButtonText}>Log Out</Text>
       </TouchableOpacity>
@@ -76,7 +119,7 @@ const styles = StyleSheet.create({
     screenContainer: {
       flex: 1,
       backgroundColor: "#f5f5f5",
-      paddingVertical:30,
+      paddingVertical:Platform.OS === 'ios' ? 0 : 30,
       },
       profileHeader: {
         backgroundColor: "#fff",
@@ -106,12 +149,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
       },
       profileName: {
-        fontSize: 20,
+        fontSize:Platform.OS === 'ios' ? 15 : 20,
         fontWeight: "bold",
         color: "#333",
       },
       profileEmail: {
-        fontSize: 14,
+        fontSize:Platform.OS === 'ios' ? 10 : 14,
         color: "#666",
         marginTop: 4,
       },
@@ -125,12 +168,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
       },
       profileStatValue: {
-        fontSize: 18,
+        fontSize:Platform.OS === 'ios' ? 13 : 18,
         fontWeight: "bold",
         color: "#333",
       },
       profileStatLabel: {
-        fontSize: 12,
+        fontSize:Platform.OS === 'ios' ? 10 : 12,
         color: "#666",
         marginTop: 4,
       },
@@ -147,7 +190,7 @@ const styles = StyleSheet.create({
         paddingBottom: 8,
       },
       profileSectionTitle: {
-        fontSize: 16,
+        fontSize:Platform.OS === 'ios' ? 13 : 16,
         fontWeight: "600",
         color: "#333",
         marginBottom: 16,
@@ -164,7 +207,7 @@ const styles = StyleSheet.create({
       },
       profileMenuText: {
         flex: 1,
-        fontSize: 16,
+        fontSize:Platform.OS === 'ios' ? 10 : 16,
         color: "#333",
       },
       logoutButton: {
@@ -180,7 +223,7 @@ const styles = StyleSheet.create({
       },
       logoutButtonText: {
         color: "#fff",
-        fontSize: 16,
+        fontSize:Platform.OS === 'ios' ? 10 : 16,
         fontWeight: "600",
       },
 })

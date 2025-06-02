@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, ScrollView, FlatList } from "react-native"
+import { StyleSheet, View, Platform, Text, TouchableOpacity, SafeAreaView, ScrollView, FlatList } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
 import { NotificationsData } from "../Data/Data"
 import { useNavigation } from "@react-navigation/native"
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize:Platform.OS === 'ios' ? 15 : 20,
     fontWeight: "bold",
     color: "#333",
   },
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   notificationCountText: {
-    fontSize: 14,
+    fontSize:Platform.OS === 'ios' ? 10 : 14,
     color: "#666",
   },
   markAllReadButton: {
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     borderColor: "#dc2626",
   },
   markAllReadText: {
-    fontSize: 12,
+    fontSize:Platform.OS === 'ios' ? 10 : 12,
     color: "#dc2626",
     fontWeight: "500",
   },
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     borderColor: "#dc2626",
   },
   filterText: {
-    fontSize: 14,
+    fontSize:Platform.OS === 'ios' ? 10 : 14,
     color: "#666",
   },
   activeFilterText: {
@@ -316,18 +316,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   notificationTitle: {
-    fontSize: 16,
+    fontSize:Platform.OS === 'ios' ? 10 : 16,
     fontWeight: "600",
     color: "#333",
   },
   notificationTime: {
-    fontSize: 12,
+    fontSize:Platform.OS === 'ios' ? 10 : 12,
     color: "#666",
   },
   notificationMessage: {
-    fontSize: 14,
+    fontSize:Platform.OS === 'ios' ? 10 : 14,
     color: "#666",
-    lineHeight: 20,
+    lineHeight: Platform.OS === 'ios' ? 16 : 20,
   },
   unreadIndicator: {
     position: "absolute",
@@ -354,13 +354,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: 20,
+    fontSize:Platform.OS === 'ios' ? 14 : 20,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 8,
   },
   emptyMessage: {
-    fontSize: 16,
+    fontSize:Platform.OS === 'ios' ? 13 : 16,
     color: "#666",
     textAlign: "center",
     lineHeight: 24,

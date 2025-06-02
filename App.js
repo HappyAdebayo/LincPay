@@ -18,7 +18,7 @@ import TransferMoneyScreen from './src/Screens/TransferMoney';
 import SecurityScreen from './src/Screens/SecurityScreen';
 import PersonalInfoScreen from './src/Screens/PersonalInfo';
 import ProfileSetupScreen from './src/Screens/ProfileSetupSreen';
-
+import Auth from './src/Screens/Auth';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -42,10 +42,12 @@ export default function App() {
         <Stack.Screen name="SecurityScreen" component={SecurityScreen} />
         <Stack.Screen name="PersonalInfoScreen" component={PersonalInfoScreen} />
         <Stack.Screen name="ProfileSetupScreen" component={ProfileSetupScreen} />
-        {/* ProfileSetupScreen */}
+        <Stack.Screen name="Auth" component={Auth} />
+        {/*  Auth */}
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+
 
 

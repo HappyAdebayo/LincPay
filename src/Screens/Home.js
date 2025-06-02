@@ -1,12 +1,32 @@
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView} from "react-native"
+import { StyleSheet, View, Text,Platform, TouchableOpacity, ScrollView} from "react-native"
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons"
 import {RecentTransactions, QuickActions} from "../Data/Data";
 import { PaymentOptions } from "../Data/Data";
 import { useNavigation } from "@react-navigation/native";
+import { useState,useEffect } from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default HomeScreen = ({ setActiveTab }) => {
   const navigation = useNavigation()
   
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    const fetchUsername = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('user');
+        if (userData) {
+          const user = JSON.parse(userData);
+          setUsername(user.username);
+        }
+      } catch (error) {
+        console.error('Failed to load username', error);
+      }
+    };
+
+    fetchUsername();
+  }, []);
+
   const handleQuickAction = (action) => {
     if (action.screen === 'transactions' || action.screen === 'profile') {
       setActiveTab(action.screen);
@@ -19,7 +39,7 @@ export default HomeScreen = ({ setActiveTab }) => {
       <View style={styles.header}>
         <View>
           <Text style={styles.welcomeText}>Welcome back,</Text>
-          <Text style={styles.userName}>Alex Johnson</Text>
+          <Text style={styles.userName}>{username}</Text>
         </View>
         <TouchableOpacity style={styles.notificationButton} onPress={()=>navigation.navigate('NotificationScreen')}>
           <FontAwesome name="bell" size={24} color="#333" />
@@ -65,7 +85,11 @@ export default HomeScreen = ({ setActiveTab }) => {
         <Text style={styles.sectionTitle}>College Payments</Text>
         <View style={styles.paymentOptionsGrid}>
           {PaymentOptions.map((option) => (
-            <TouchableOpacity key={option.id} style={styles.paymentOption} onPress={()=>navigation.navigate('TransferMoneyScreen')}>
+            <TouchableOpacity key={option.id} style={styles.paymentOption} onPress={()=>navigation.navigate('TransferMoneyScreen',{
+              account_number:option.account_number,
+              bank_name:option.bank_name,
+              fee_name:option.title
+            })}>
               <View style={styles.paymentOptionIcon}>
                 <MaterialIcons name={option.icon} size={24} color="#dc2626" />
               </View>
@@ -138,7 +162,7 @@ const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-    paddingVertical:40
+    paddingVertical:Platform.OS === 'ios' ? 0 : 30,
   },
   header: {
     flexDirection: "row",
@@ -149,11 +173,11 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   welcomeText: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16,
     color: "#666",
   },
   userName: {
-    fontSize: 20,
+    fontSize: Platform.OS === 'ios' ? 14 : 20,
     fontWeight: "bold",
     color: "#333",
   },
@@ -184,7 +208,7 @@ const styles = StyleSheet.create({
   },
   notificationBadgeText: {
     color: "#fff",
-    fontSize: 10,
+    fontSize: Platform.OS === 'ios' ? 8 : 10,
     fontWeight: "bold",
   },
   balanceCard: {
@@ -211,10 +235,11 @@ const styles = StyleSheet.create({
   balanceLabel: {
     color: "rgba(255, 255, 255, 0.8)",
     fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 13 : 14,
   },
   balanceAmount: {
     color: "#fff",
-    fontSize: 32,
+    fontSize: Platform.OS === 'ios' ? 20 : 32,
     fontWeight: "bold",
     marginVertical: 8,
   },
@@ -241,7 +266,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: Platform.OS === 'ios' ? 13 : 18,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 16,
@@ -268,7 +293,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   quickActionText: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10 : 12,
     color: "#666",
   },
   paymentsContainer: {
@@ -300,7 +325,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   paymentOptionText: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10 : 12,
     color: "#666",
     textAlign: "center",
   },
@@ -316,7 +341,7 @@ const styles = StyleSheet.create({
   },
   viewAllText: {
     color: "#dc2626",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14,
   },
   transactionItem: {
     flexDirection: "row",
@@ -339,17 +364,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   transactionTitle: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16,
     fontWeight: "500",
     color: "#333",
   },
   transactionDate: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10 : 12,
     color: "#666",
     marginTop: 2,
   },
   transactionAmount: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16,
     fontWeight: "600",
   },
   tipsContainer: {
@@ -377,14 +402,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tipTitle: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 13 : 16,
     fontWeight: "600",
     color: "#333",
     marginBottom: 4,
   },
   tipText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14,
     color: "#666",
-    lineHeight: 20,
+    lineHeight: Platform.OS === 'ios' ? 15 : 20,
   },
 })

@@ -1,5 +1,4 @@
-import React from 'react'
-import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native'
+import { Modal,ActivityIndicator, View, Text, TextInput, TouchableOpacity,Platform, StyleSheet } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons'
 
 const ChangePasswordModal = ({
@@ -11,7 +10,8 @@ const ChangePasswordModal = ({
   setNewPassword,
   confirmPassword,
   setConfirmPassword,
-  handleChangePassword
+  handleChangePassword,
+  loading
 }) => {
   return (
     <Modal
@@ -96,6 +96,11 @@ const ChangePasswordModal = ({
               <Text style={styles.cancelModalButtonText}>Cancel</Text>
             </TouchableOpacity>
 
+           {loading ? (
+              <View style={{alignItems: 'center',flex:1,marginLeft: 8 }}>
+                <ActivityIndicator size="large" color="#dc2626" />
+              </View>
+            ) : (
             <TouchableOpacity
               style={[
                 styles.confirmModalButton,
@@ -106,6 +111,7 @@ const ChangePasswordModal = ({
             >
               <Text style={styles.confirmModalButtonText}>Change Password</Text>
             </TouchableOpacity>
+            )}
           </View>
         </View>
       </TouchableOpacity>
@@ -128,7 +134,7 @@ const styles = StyleSheet.create({
         padding: 20,
       },
       modalTitle: {
-        fontSize: 18,
+        fontSize: Platform.OS === 'ios' ? 15 : 18,
         fontWeight: "bold",
         color: "#333",
         marginBottom: 20,
@@ -138,7 +144,7 @@ const styles = StyleSheet.create({
         marginBottom: 16,
       },
       passwordInputLabel: {
-        fontSize: 14,
+        fontSize: Platform.OS === 'ios' ? 11 : 14,
         fontWeight: "500",
         color: "#666",
         marginBottom: 8,
@@ -149,7 +155,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         paddingHorizontal: 12,
         paddingVertical: 10,
-        fontSize: 16,
+        fontSize: Platform.OS === 'ios' ? 12 : 16,
       },
       passwordRequirements: {
         backgroundColor: "#f9fafb",
@@ -158,7 +164,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
       },
       passwordRequirementsTitle: {
-        fontSize: 14,
+        fontSize: Platform.OS === 'ios' ? 10 :14,
         fontWeight: "500",
         color: "#333",
         marginBottom: 8,
@@ -172,7 +178,7 @@ const styles = StyleSheet.create({
         marginRight: 8,
       },
       passwordRequirementText: {
-        fontSize: 12,
+        fontSize: Platform.OS === 'ios' ? 10 : 12,
         color: "#666",
       },
       modalButtons: {
@@ -188,20 +194,20 @@ const styles = StyleSheet.create({
         marginRight: 8,
       },
       cancelModalButtonText: {
-        fontSize: 16,
+        fontSize: Platform.OS === 'ios' ? 13 : 16,
         fontWeight: "500",
         color: "#666",
       },
       confirmModalButton: {
         flex: 1,
-        paddingVertical: 12,
+        paddingVertical:Platform.OS === 'ios' ? 0 : 12,
         alignItems: "center",
         backgroundColor: "#dc2626",
         borderRadius: 8,
         marginLeft: 8,
       },
       confirmModalButtonText: {
-        fontSize: 16,
+        fontSize: Platform.OS === 'ios' ? 13 : 16,
         fontWeight: "500",
         color: "#fff",
       },

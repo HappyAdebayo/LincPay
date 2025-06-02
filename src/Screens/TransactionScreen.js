@@ -1,4 +1,4 @@
-import { StyleSheet,View,Text,TouchableOpacity,FlatList } from "react-native"
+import { StyleSheet,View,Text,TouchableOpacity,FlatList,Platform } from "react-native"
 import {RecentTransactions} from "../Data/Data"
 import { FontAwesome } from "@expo/vector-icons"
 import { useState } from "react"
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     screenContainer: {
       flex: 1,
       backgroundColor: "#f5f5f5",
-      paddingVertical:50  
+      paddingVertical:Platform.OS === 'ios' ? 0 : 30,
     },
     screenHeader: {
         backgroundColor: "#fff",
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
         borderBottomColor: "#e5e7eb",
       },
       screenTitle: {
-        fontSize: 20,
+        fontSize:Platform.OS === 'ios' ? 15 : 20,
         fontWeight: "bold",
         color: "#333",
       },
@@ -140,17 +140,17 @@ const styles = StyleSheet.create({
         flex: 1,
       },
       transactionTitle: {
-        fontSize: 16,
+        fontSize:Platform.OS === 'ios' ? 13 : 16,
         fontWeight: "500",
         color: "#333",
       },
       transactionDate: {
-        fontSize: 12,
+        fontSize:Platform.OS === 'ios' ? 10 : 12,
         color: "#666",
         marginTop: 2,
       },
       transactionAmount: {
-        fontSize: 16,
+        fontSize:Platform.OS === 'ios' ? 10 : 16,
         fontWeight: "600",
       },
       transactionItemFull: {
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
         alignItems: "flex-end",
       },
       transactionCategory: {
-        fontSize: 12,
+        fontSize:Platform.OS === 'ios' ? 10 : 12,
         color: "#666",
         marginTop: 2,
       },

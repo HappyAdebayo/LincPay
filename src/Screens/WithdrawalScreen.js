@@ -174,7 +174,7 @@ export default function WithdrawMoneyScreen() {
                     value={bankName}
                     onChangeText={(text) => setBankName(formatAccountNumber(text))}
                     placeholder="Enter name of bank"
-                    keyboardType="number-pad"
+                    // keyboardType="number-pad"
                     maxLength={9}
                   />
                 </View>
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: Platform.OS === 'ios' ? 15:20,
     fontWeight: "bold",
     color: "#333",
   },
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   amountLabel: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     fontWeight: "600",
     color: "#333",
     marginBottom: 10,
@@ -373,19 +373,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   currencySymbol: {
-    fontSize: 24,
+    fontSize: Platform.OS === 'ios' ? 15: 24,
     fontWeight: "bold",
     color: "#333",
     marginRight: 5,
   },
   amountInput: {
     flex: 1,
-    fontSize: 24,
+    fontSize: Platform.OS === 'ios' ? 15:24,
     fontWeight: "bold",
     color: "#333",
   },
   balanceText: {
-    fontSize: 14,
+    fontSize:Platform.OS === 'ios' ? 10: 14,
     color: "#666",
   },
   quickAmountContainer: {
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     borderColor: "#e5e7eb",
   },
   quickAmountText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10: 14,
     fontWeight: "600",
     color: "#333",
   },
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: Platform.OS === 'ios' ? 12:18,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 16,
@@ -453,12 +453,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   accountTitle: {
-    fontSize: 16,
+    fontSize:Platform.OS === 'ios' ? 12: 16,
     fontWeight: "600",
     color: "#333",
   },
   accountSubtitle: {
-    fontSize: 14,
+    fontSize:Platform.OS === 'ios' ? 10: 14,
     color: "#666",
     marginTop: 2,
   },
@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   inputLabel: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     fontWeight: "500",
     color: "#666",
     marginBottom: 8,
@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     color: "#333",
   },
   accountTypeContainer: {
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
     borderColor: "#e5e7eb",
   },
   accountTypeText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     color: "#666",
   },
   selectedAccountType: {
@@ -548,7 +548,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#dc2626",
   },
   saveAccountText: {
-    fontSize: 14,
+    fontSize:Platform.OS === 'ios' ? 10: 14,
     color: "#666",
   },
   feeContainer: {
@@ -564,16 +564,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   feeLabel: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     color: "#666",
   },
   feeValue: {
-    fontSize: 14,
+    fontSize:Platform.OS === 'ios' ? 10: 14,
     fontWeight: "500",
     color: "#333",
   },
   feeTotalValue: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     fontWeight: "bold",
     color: "#333",
   },
@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
   },
   withdrawButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     fontWeight: "bold",
   },
   infoContainer: {
@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   infoText: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10:12,
     color: "#666",
     flex: 1,
     lineHeight: 18,
@@ -617,7 +617,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   limitsTitle: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     fontWeight: "600",
     color: "#333",
     marginBottom: 12,
@@ -630,11 +630,11 @@ const styles = StyleSheet.create({
     borderBottomColor: "#f3f4f6",
   },
   limitLabel: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     color: "#666",
   },
   limitValue: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     fontWeight: "600",
     color: "#333",
  

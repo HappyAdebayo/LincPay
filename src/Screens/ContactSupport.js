@@ -13,73 +13,64 @@ import {
 } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
-import { SupportCategories } from "../Data/Data"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import { useApi } from "../hooks/useApi"
 
 export default function ContactSupportScreen() {
   const [subject, setSubject] = useState("")
   const [message, setMessage] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState(null)
-  const [attachments, setAttachments] = useState([])
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const navigation=useNavigation()
 
 
-  const handleSubmit = () => {
-    if (!subject.trim()) {
-      Alert.alert("Error", "Please enter a subject")
-      return
-    }
+ const { loading, error, data, callApi } = useApi('http://192.168.74.1/lincpay_backend/api/user_api.php?action=complaint', 'POST');
 
-    if (!message.trim()) {
-      Alert.alert("Error", "Please enter a message")
-      return
-    }
+  const handleSubmit = async () => {
+    try {
+      const userData = await AsyncStorage.getItem('user');
+      const parsedUser = JSON.parse(userData);
+      const user_id = parsedUser?.id;
+     console.log('this is the usesr_id',user_id);
+     
+      if (!user_id) {
+        Alert.alert('Error', 'User not found in storage');
+        return;
+      }
 
-    if (!selectedCategory) {
-      Alert.alert("Error", "Please select a category")
-      return
-    }
+      if (!subject || !message) {
+        Alert.alert('Validation Error', 'All fields are required');
+        return;
+      }
 
-    setIsSubmitting(true)
+      const response = await callApi({
+        payload: {
+          title:subject,
+          user_id,
+          complaint:message,
+        },
+      });
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false)
-      Alert.alert("Success", "Your support ticket has been submitted. We'll get back to you within 24 hours.", [
+      if (response?.status === 'success') {
+         setTimeout(() => {
+      // setIsSubmitting(false)
+      Alert.alert("Success", response.message, [
         {
           text: "OK",
           onPress: () => {
             // Reset form
             setSubject("")
             setMessage("")
-            setSelectedCategory(null)
-            setAttachments([])
           },
         },
       ])
     }, 1500)
-  }
-
-  const handleAddAttachment = () => {
-    // Mock adding an attachment
-    if (attachments.length >= 3) {
-      Alert.alert("Limit Reached", "You can only add up to 3 attachments")
-      return
+      } else {
+        Alert.alert('Error', response?.message || 'Something went wrong');
+      }
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Error', 'Failed to submit complaint');
     }
-
-    const newAttachment = {
-      id: Date.now().toString(),
-      name: `Screenshot_${attachments.length + 1}.png`,
-      size: "1.2 MB",
-    }
-
-    setAttachments([...attachments, newAttachment])
-  }
-
-  const handleRemoveAttachment = (id) => {
-    setAttachments(attachments.filter((attachment) => attachment.id !== id))
-  }
-
+  };
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
@@ -142,7 +133,7 @@ export default function ContactSupportScreen() {
             <View style={styles.formContainer}>
               <Text style={styles.formTitle}>Submit a Support Ticket</Text>
 
-              <View style={styles.inputContainer}>
+              {/* <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Category</Text>
                 <View style={styles.categoriesContainer}>
                   {SupportCategories.map((category) => (
@@ -162,7 +153,7 @@ export default function ContactSupportScreen() {
                     </TouchableOpacity>
                   ))}
                 </View>
-              </View>
+              </View> */}
 
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Subject</Text>
@@ -188,14 +179,14 @@ export default function ContactSupportScreen() {
               </View>
 
               <View style={styles.inputContainer}>
-                <View style={styles.attachmentsHeader}>
+                {/* <View style={styles.attachmentsHeader}>
                   <Text style={styles.inputLabel}>Attachments</Text>
                   <TouchableOpacity onPress={handleAddAttachment}>
                     <Text style={styles.addAttachmentText}>+ Add File</Text>
                   </TouchableOpacity>
-                </View>
+                </View> */}
 
-                {attachments.length > 0 ? (
+                {/* {attachments.length > 0 ? (
                   <View style={styles.attachmentsList}>
                     {attachments.map((attachment) => (
                       <View key={attachment.id} style={styles.attachmentItem}>
@@ -219,18 +210,18 @@ export default function ContactSupportScreen() {
                       Add screenshots or files to help us understand your issue better (optional)
                     </Text>
                   </View>
-                )}
+                )} */}
               </View>
 
               <TouchableOpacity
                 style={[
                   styles.submitButton,
-                  (!subject.trim() || !message.trim() || !selectedCategory || isSubmitting) && styles.disabledButton,
+                  (!subject.trim() || !message.trim() ) && styles.disabledButton,
                 ]}
                 onPress={handleSubmit}
-                disabled={!subject.trim() || !message.trim() || !selectedCategory || isSubmitting}
+                disabled={!subject.trim() || !message.trim()}
               >
-                <Text style={styles.submitButtonText}>{isSubmitting ? "SUBMITTING..." : "SUBMIT TICKET"}</Text>
+                <Text style={styles.submitButtonText}>{loading ? "SUBMITTING..." : "SUBMIT COMPLAINT"}</Text>
               </TouchableOpacity>
 
               <View style={styles.responseTimeContainer}>
@@ -281,7 +272,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: Platform.OS === 'ios' ? 15 :20,
     fontWeight: "bold",
     color: "#333",
   },
@@ -330,13 +321,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   supportTitle: {
-    fontSize: 18,
+    fontSize: Platform.OS === 'ios' ? 12 :18,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 4,
   },
   supportText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14,
     color: "#666",
     lineHeight: 20,
   },
@@ -371,13 +362,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   contactOptionTitle: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 :14,
     fontWeight: "600",
     color: "#333",
     marginBottom: 2,
   },
   contactOptionText: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10 :12,
     color: "#666",
   },
   formContainer: {
@@ -392,7 +383,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   formTitle: {
-    fontSize: 18,
+    fontSize: Platform.OS === 'ios' ? 12 : 18,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 20,
@@ -401,7 +392,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   inputLabel: {
-    fontSize: 14,
+    fontSize:Platform.OS === 'ios' ? 12 : 14,
     fontWeight: "500",
     color: "#666",
     marginBottom: 8,
@@ -412,7 +403,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12 : 16,
     color: "#333",
   },
   messageInput: {
@@ -421,7 +412,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12 : 16,
     color: "#333",
     height: 120,
   },
@@ -442,7 +433,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#dc2626",
   },
   categoryButtonText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 :14,
     color: "#666",
   },
   selectedCategoryButtonText: {
@@ -456,7 +447,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   addAttachmentText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 :14,
     color: "#dc2626",
     fontWeight: "500",
   },
@@ -479,13 +470,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   attachmentName: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14,
     color: "#333",
     marginLeft: 8,
     flex: 1,
   },
   attachmentSize: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10 :12,
     color: "#666",
     marginLeft: 8,
   },
@@ -499,7 +490,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   noAttachmentsText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 :14,
     color: "#666",
     textAlign: "center",
   },
@@ -515,7 +506,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12 :16,
     fontWeight: "bold",
   },
   responseTimeContainer: {
@@ -528,7 +519,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   responseTimeText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 :14,
     color: "#666",
   },
   faqLinkContainer: {
@@ -546,7 +537,7 @@ const styles = StyleSheet.create({
   },
   faqLinkText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 :14,
     color: "#333",
     marginHorizontal: 12,
   },

@@ -1,16 +1,43 @@
 import { useState } from "react"
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView } from "react-native"
-import { FontAwesome } from "@expo/vector-icons"
+import { StyleSheet,Alert, View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView,Platform ,ActivityIndicator} from "react-native"
 import { useNavigation } from "@react-navigation/native"
+import { useApi } from "../hooks/useApi"
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const navigation=useNavigation()
 
-  const handleLogin = () => {
-    navigation.navigate('BottomTab')
-    console.log({ username, password })
+  const { loading, data, callApi } = useApi('http://192.168.74.1/lincpay_backend/api/auth_api.php?action=login', 'POST');
+
+  const handleLogin =async () => {
+     navigation.navigate('Auth')
+    if (!username || !password) {
+      Alert.alert('Validation Error', 'Username and password are required.');
+      return;
+    }
+    
+    const response = await callApi({
+      payload: { username, password },
+    });
+    console.log(response);
+    
+    if (response?.status === 'success') {
+       await AsyncStorage.setItem('user', JSON.stringify(response.user));
+       Alert.alert('Success', 'Login successful!');
+       navigation.replace('BottomTab')
+    }else if(response?.status =="not_validated"){
+       try {
+      await AsyncStorage.setItem('user_id', String(response.user_id));
+      navigation.navigate('ProfileSetupScreen')
+    } catch (error) {
+      alert('Failed to save user ID locally');
+    }
+    } 
+    else if (response?.message) {
+      Alert.alert('Login Failed', response.message);
+    }
   }
 
   return (
@@ -52,33 +79,24 @@ export default function LoginScreen() {
               </View>
 
               <View style={styles.forgotPasswordContainer}>
-                <TouchableOpacity onPress={()=>navigation.navigate('ResetEmailScreen')}>
+                  <TouchableOpacity onPress={()=>navigation.navigate('ResetEmailScreen')}>
                   <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
                 </TouchableOpacity>
+
               </View>
 
+              
               <View style={styles.loginButtonContainer}>
+                {loading ? (
+                  <View style={{ marginVertical: 20, alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#dc2626" />
+                  </View>
+                ) : (
                 <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
                   <Text style={styles.loginButtonText}>LOGIN</Text>
                 </TouchableOpacity>
+                )}
               </View>
-            </View>
-
-            <View style={styles.socialLoginContainer}>
-              <TouchableOpacity style={styles.socialButton}>
-                <FontAwesome name="facebook" size={20} color="#3b5998" style={styles.socialIcon} />
-                <Text style={styles.socialButtonText}>Continue with Facebook</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.socialButton}>
-                <FontAwesome name="google" size={20} color="#db4437" style={styles.socialIcon} />
-                <Text style={styles.socialButtonText}>Continue with Google</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.socialButton}>
-                <FontAwesome name="apple" size={20} color="#000" style={styles.socialIcon} />
-                <Text style={styles.socialButtonText}>Continue with Apple ID</Text>
-              </TouchableOpacity>
             </View>
 
             <Text style={styles.termsText}>
@@ -130,19 +148,19 @@ const styles = StyleSheet.create({
   },
   signUpText: {
     color: "#dc2626",
-    fontSize: 12,
     fontWeight: "600",
     textTransform: "uppercase",
+    fontSize: Platform.OS === 'ios' ? 10 : 12, 
   },
   loginTitle: {
     color: "#dc2626",
-    fontSize: 28,
+    fontSize: Platform.OS === 'ios' ? 23 : 28, 
     fontWeight: "bold",
     marginTop: 20,
   },
   loginDescription: {
     color: "#666",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
     marginTop: 8,
     marginBottom: 24,
   },
@@ -154,7 +172,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: "#dc2626",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
     fontWeight: "500",
     marginBottom: 6,
   },
@@ -163,7 +181,7 @@ const styles = StyleSheet.create({
     borderColor: "#e2e8f0",
     borderRadius: 6,
     padding: 12,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16, 
   },
   forgotPasswordContainer: {
     alignItems: "flex-start",
@@ -171,7 +189,7 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     color: "#666",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
   },
   loginButtonContainer: {
     alignItems: "flex-end",
@@ -186,12 +204,8 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16, 
     fontWeight: "600",
-  },
-  socialLoginContainer: {
-    marginTop: 40,
-    marginBottom: 24,
   },
   socialButton: {
     flexDirection: "row",
@@ -203,17 +217,11 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
   },
-  socialIcon: {
-    marginRight: 12,
-  },
-  socialButtonText: {
-    fontSize: 16,
-    color: "#333",
-  },
   termsText: {
-    fontSize: 12,
     color: "#666",
     textAlign: "center",
+    fontSize: Platform.OS === 'ios' ? 10 : 12, 
+
   },
   termsLink: {
     fontWeight: "600",

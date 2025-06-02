@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet,Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 export default function SplashScreen() {
@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#dc2626', 
   },
   title: {
-    fontSize: 48,
+    fontSize: Platform.OS === 'ios' ? 30 : 48, 
     fontWeight: '700',
     color: '#fff',
     textAlign: 'center',

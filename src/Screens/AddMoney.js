@@ -12,6 +12,7 @@ import {
 } from "react-native"
 import { FontAwesome} from "@expo/vector-icons"
 import { SavedPaymentMethods } from "../Data/Data"
+import { useNavigation } from "@react-navigation/native"
 
 export default function AddMoneyScreen() {
   const [amount, setAmount] = useState("")
@@ -21,6 +22,7 @@ export default function AddMoneyScreen() {
   const [expiryDate, setExpiryDate] = useState("")
   const [cvv, setCvv] = useState("")
   const [cardholderName, setCardholderName] = useState("")
+  const navigation=useNavigation()
 
   const formatCardNumber = (text) => {
     const cleaned = text.replace(/\D/g, "")
@@ -64,7 +66,7 @@ export default function AddMoneyScreen() {
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.header}>
-            <TouchableOpacity style={styles.backButton}>
+            <TouchableOpacity style={styles.backButton} onPress={()=>navigation.goBack()}>
               <FontAwesome name="arrow-left" size={20} color="#333" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Add Money</Text>
@@ -299,7 +301,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: Platform.OS === 'ios' ? 15:20,
     fontWeight: "bold",
     color: "#333",
   },
@@ -330,7 +332,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   amountLabel: {
-    fontSize: 16,
+    fontSize:Platform.OS === 'ios' ? 12: 16,
     fontWeight: "600",
     color: "#333",
     marginBottom: 10,
@@ -344,19 +346,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   currencySymbol: {
-    fontSize: 24,
+    fontSize:Platform.OS === 'ios' ? 15: 24,
     fontWeight: "bold",
     color: "#333",
     marginRight: 5,
   },
   amountInput: {
     flex: 1,
-    fontSize: 24,
+    fontSize: Platform.OS === 'ios' ? 15:24,
     fontWeight: "bold",
     color: "#333",
   },
   balanceText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     color: "#666",
   },
   quickAmountContainer: {
@@ -379,7 +381,7 @@ const styles = StyleSheet.create({
     borderColor: "#e5e7eb",
   },
   quickAmountText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     fontWeight: "600",
     color: "#333",
   },
@@ -387,7 +389,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: Platform.OS === 'ios' ? 12:18,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 16,
@@ -424,12 +426,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   paymentMethodTitle: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     fontWeight: "600",
     color: "#333",
   },
   paymentMethodSubtitle: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     color: "#666",
     marginTop: 2,
   },
@@ -463,7 +465,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   inputLabel: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     fontWeight: "500",
     color: "#666",
     marginBottom: 8,
@@ -474,7 +476,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     color: "#333",
   },
   cardNumberContainer: {
@@ -488,7 +490,7 @@ const styles = StyleSheet.create({
   cardNumberInput: {
     flex: 1,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     color: "#333",
   },
   cardTypeIcon: {
@@ -511,10 +513,10 @@ const styles = StyleSheet.create({
     marginRight: 10,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: saveCard => (saveCard ? "#dc2626" : "transparent"),
+    // backgroundColor: saveCard => (saveCard ? "#dc2626" : "transparent"),
   },
   saveCardText: {
-    fontSize: 14,
+    fontSize:Platform.OS === 'ios' ? 10: 14,
     color: "#666",
   },
   feeContainer: {
@@ -530,16 +532,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   feeLabel: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     color: "#666",
   },
   feeValue: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     fontWeight: "500",
     color: "#333",
   },
   feeTotalValue: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     fontWeight: "bold",
     color: "#333",
   },
@@ -555,7 +557,7 @@ const styles = StyleSheet.create({
   },
   addMoneyButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     fontWeight: "bold",
   },
   securityNoteContainer: {
@@ -568,7 +570,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   securityNoteText: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10:12,
     color: "#666",
     flex: 1,
     lineHeight: 18,

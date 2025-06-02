@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert } from "react-native"
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert,Platform } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 
@@ -147,8 +147,6 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    paddingVertical: 30,
   },
   formContainer: {
     backgroundColor: "#fff",
@@ -173,7 +171,7 @@ const styles = StyleSheet.create({
   },
   loginLinkText: {
     color: "#dc2626",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
     fontWeight: "600",
   },
   content: {
@@ -185,12 +183,13 @@ const styles = StyleSheet.create({
   title: {
     color: "#dc2626",
     fontSize: 28,
+    fontSize: Platform.OS === 'ios' ? 20 : 28, 
     fontWeight: "bold",
     marginTop: 8,
   },
   description: {
     color: "#666",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
     marginTop: 8,
     marginBottom: 24,
     maxWidth: "90%",
@@ -203,7 +202,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: "#dc2626",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
     fontWeight: "500",
     marginBottom: 6,
   },
@@ -218,7 +217,7 @@ const styles = StyleSheet.create({
   passwordInput: {
     flex: 1,
     padding: 12,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16,
   },
   eyeIcon: {
     padding: 12,
@@ -228,7 +227,7 @@ const styles = StyleSheet.create({
   },
   strengthText: {
     color: "#666",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
     marginBottom: 4,
   },
   strengthIndicator: {
@@ -243,7 +242,7 @@ const styles = StyleSheet.create({
   },
   strengthHint: {
     color: "#666",
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10 : 12,
     textAlign: "right",
   },
   button: {
@@ -256,7 +255,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16,
     fontWeight: "600",
   },
   requirementsContainer: {
@@ -267,7 +266,7 @@ const styles = StyleSheet.create({
   },
   requirementsTitle: {
     color: "#333",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
     fontWeight: "600",
     marginBottom: 8,
   },
@@ -281,10 +280,10 @@ const styles = StyleSheet.create({
   },
   requirementText: {
     color: "#666",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14,
   },
   termsText: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10 : 12,
     color: "#666",
     textAlign: "center",
   },

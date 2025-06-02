@@ -10,63 +10,84 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,Modal
 } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
-import { useNavigation } from "@react-navigation/native"
+import { useNavigation,useRoute } from "@react-navigation/native"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import { useApi } from "../hooks/useApi"
+import PaymentWebView from "../Modals/paymentModal"
 
 export default function TransferMoneyScreen() {
+    const route = useRoute();
+  const { account_number, bank_name,fee_name } = route.params;
   const [amount, setAmount] = useState("")
   const [note, setNote] = useState("")
+  const [semester, setSemester] = useState("")
   const navigation=useNavigation()
-  const [accountNumber, setAccountNumber] = useState("")
-  const [bankName, setBankName] = useState("")
+  const [accountNumber, setAccountNumber] = useState(account_number)
+  const [bankName, setBankName] = useState(bank_name)
+ const { loading, error, data, callApi } = useApi('http://192.168.74.1/lincpay_backend/api/payment_api.php?action=transfer', 'POST');
+ const [paymentUrl, setPaymentUrl] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const handleTransfer = () => {
+ const handleTransfer = async () => {
     if (!amount || Number.parseFloat(amount) <= 0) {
-      Alert.alert("Invalid Amount", "Please enter a valid amount to transfer")
-      return
+      Alert.alert("Invalid amount", "Please enter a valid amount greater than zero.");
+      return;
     }
 
-    if (Number.parseFloat(amount) > 1245.8) {
-      Alert.alert("Insufficient Funds", "You don't have enough funds to transfer this amount")
-      return
+     if (!semester) {
+      Alert.alert("Error", "Semester is required");
+      return;
     }
 
-    if (!accountNumber) {
-      Alert.alert("Account Number Required", "Please input an account number")
-      return
-    }
+    try {
+      const userDataJSON = await AsyncStorage.getItem('user');
+      if (!userDataJSON) {
+        Alert.alert("User data missing", "Please login again.");
+        return;
+      }
+      const userData = JSON.parse(userDataJSON);
+      console.log('userdata',userData);
+      
+      const user_id = userData.id;
+      const email =userData.email
+      if (!user_id) {
+        Alert.alert("User ID missing", "Please login again.");
+        return;
+      }
 
-    Alert.alert("Confirm Transfer", `Are you sure you want to transfer $${amount} to this No. ${accountNumber}?`, [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Confirm",
-        onPress: () => {
-          setTimeout(() => {
-            Alert.alert(
-              "Transfer Successful",
-              `You have successfully transferred $${amount} to this No. ${accountNumber}.`,
-              [
-                {
-                  text: "OK",
-                  onPress: () => {
-                    // Reset form
-                    setAmount("")
-                    setAccountNumber("")
-                    setBankName("")
-                    setNote("")
-                  },
-                },
-              ],
-            )
-          }, 1000)
-        },
-      },
-    ])
-  }
+      const payload = {
+        amount: Number.parseFloat(amount),
+        accountNumber,
+        bankName,
+        note,
+        user_id,
+        semester,
+        email,
+        fee_name,
+        payment_type:'out'
+      };
+
+      const response = await callApi({ payload });
+       console.log('response', response);
+       
+      if (response && response.status === 'success') {
+         setPaymentUrl(response.data.authorization_url);
+      setModalVisible(true);
+        setAmount('');
+        setNote('');
+      } else {
+        Alert.alert("Error", response?.message || "Transfer failed");
+      }
+    } catch (e) {
+      Alert.alert("Error", "An unexpected error occurred.");
+      console.error(e);
+    }
+  };
+
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -86,7 +107,7 @@ export default function TransferMoneyScreen() {
             <View style={styles.amountContainer}>
               <Text style={styles.amountLabel}>Amount</Text>
               <View style={styles.amountInputContainer}>
-                <Text style={styles.currencySymbol}>$</Text>
+                <Text style={styles.currencySymbol}>₦</Text>
                 <TextInput
                   style={styles.amountInput}
                   value={amount}
@@ -96,21 +117,21 @@ export default function TransferMoneyScreen() {
                   placeholderTextColor="#999"
                 />
               </View>
-              <Text style={styles.balanceText}>Available Balance: $1,245.80</Text>
+              <Text style={styles.balanceText}>Available Balance: ₦1,245.80</Text>
             </View>
 
             <View style={styles.quickAmountContainer}>
               <TouchableOpacity style={styles.quickAmountButton} onPress={() => setAmount("10")}>
-                <Text style={styles.quickAmountText}>$10</Text>
+                <Text style={styles.quickAmountText}>₦10</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.quickAmountButton} onPress={() => setAmount("25")}>
-                <Text style={styles.quickAmountText}>$25</Text>
+                <Text style={styles.quickAmountText}>₦25</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.quickAmountButton} onPress={() => setAmount("50")}>
-                <Text style={styles.quickAmountText}>$50</Text>
+                <Text style={styles.quickAmountText}>₦50</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.quickAmountButton} onPress={() => setAmount("100")}>
-                <Text style={styles.quickAmountText}>$100</Text>
+                <Text style={styles.quickAmountText}>₦100</Text>
               </TouchableOpacity>
             </View>
 
@@ -125,6 +146,7 @@ export default function TransferMoneyScreen() {
                                placeholder="3091 5670 76"
                                keyboardType="number-pad"
                                maxLength={19}
+                               editable={false}
                              />
                              <View style={styles.cardTypeIcon}>
                                <FontAwesome name="credit-card" size={20} color="#666" />
@@ -139,9 +161,26 @@ export default function TransferMoneyScreen() {
                              value={bankName}
                              onChangeText={setBankName}
                              placeholder="FirstBank"
+                             editable={false}
                            />
                          </View>
                        </View>
+
+                         <View style={styles.inputContainer}>
+                           <Text style={styles.inputLabel}>Semester</Text>
+                           <View style={styles.cardNumberContainer}>
+                             <TextInput
+                               style={styles.cardNumberInput}
+                               value={semester}
+                               onChangeText={(text) => setSemester(text)}
+                               placeholder="semester 1"
+                               maxLength={19}
+                             />
+                             <View style={styles.cardTypeIcon}>
+                               <FontAwesome name="credit-card" size={20} color="#666" />
+                             </View>
+                           </View>
+                         </View>
 
             <View style={styles.noteSection}>
               <Text style={styles.sectionTitle}>Note (Optional)</Text>
@@ -160,16 +199,21 @@ export default function TransferMoneyScreen() {
             <View style={styles.feeContainer}>
               <View style={styles.feeRow}>
                 <Text style={styles.feeLabel}>Transfer Fee</Text>
-                <Text style={styles.feeValue}>$0.00</Text>
+                <Text style={styles.feeValue}>₦0.00</Text>
               </View>
               <View style={styles.feeRow}>
                 <Text style={styles.feeLabel}>Total Amount</Text>
                 <Text style={styles.feeTotalValue}>
-                  ${amount ? (Number.parseFloat(amount) + 0).toFixed(2) : "0.00"}
+                  ₦{amount ? (Number.parseFloat(amount) + 0).toFixed(2) : "0.00"}
                 </Text>
               </View>
             </View>
 
+             {loading ? (
+                  <View style={{  alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#dc2626" />
+                  </View>
+                ) : (
             <TouchableOpacity
               style={[
                 styles.transferButton,
@@ -180,6 +224,7 @@ export default function TransferMoneyScreen() {
             >
               <Text style={styles.transferButtonText}>TRANSFER MONEY</Text>
             </TouchableOpacity>
+                )}
 
             <View style={styles.securityNoteContainer}>
               <FontAwesome name="lock" size={16} color="#666" style={styles.securityIcon} />
@@ -188,6 +233,14 @@ export default function TransferMoneyScreen() {
               </Text>
             </View>
           </View>
+           {modalVisible && (
+        <PaymentWebView 
+          visible={modalVisible} 
+          url={paymentUrl} 
+          onClose={() => setModalVisible(false)}
+          // verifyPayment={verifyPayment} 
+        />
+      )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -224,7 +277,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: Platform.OS === 'ios' ? 15: 20,
     fontWeight: "bold",
     color: "#333",
   },
@@ -258,7 +311,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   amountLabel: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12 :16,
     fontWeight: "600",
     color: "#333",
     marginBottom: 10,
@@ -272,19 +325,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   currencySymbol: {
-    fontSize: 24,
+    fontSize: Platform.OS === 'ios' ? 15: 24,
     fontWeight: "bold",
     color: "#333",
     marginRight: 5,
   },
   amountInput: {
     flex: 1,
-    fontSize: 24,
+    fontSize: Platform.OS === 'ios' ? 15:24,
     fontWeight: "bold",
     color: "#333",
   },
   balanceText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     color: "#666",
   },
   quickAmountContainer: {
@@ -307,7 +360,7 @@ const styles = StyleSheet.create({
     borderColor: "#e5e7eb",
   },
   quickAmountText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     fontWeight: "600",
     color: "#333",
   },
@@ -315,7 +368,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: Platform.OS === 'ios' ? 12:18,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 16,
@@ -339,7 +392,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     color: "#333",
   },
   clearButton: {
@@ -373,12 +426,12 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   selectedContactName: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     fontWeight: "600",
     color: "#333",
   },
   selectedContactUsername: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     color: "#666",
   },
   changeButton: {
@@ -388,7 +441,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f3f4f6",
   },
   changeButtonText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     color: "#666",
   },
   contactsContainer: {
@@ -405,13 +458,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   recentContactsTitle: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     fontWeight: "600",
     color: "#333",
     marginBottom: 12,
   },
   allContactsTitle: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     fontWeight: "600",
     color: "#333",
     marginBottom: 12,
@@ -450,7 +503,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   avatarText: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     fontWeight: "bold",
     color: "#666",
   },
@@ -458,12 +511,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contactName: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     fontWeight: "500",
     color: "#333",
   },
   contactUsername: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     color: "#666",
   },
   radioButton: {
@@ -486,7 +539,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   noResultsText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     color: "#666",
   },
   noteSection: {
@@ -496,7 +549,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     color: "#333",
     elevation: 1,
     shadowColor: "#000",
@@ -552,7 +605,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#f3f4f6",
   },
   recurringLabel: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     fontWeight: "500",
     color: "#666",
     marginBottom: 8,
@@ -575,7 +628,7 @@ const styles = StyleSheet.create({
     borderColor: "#dc2626",
   },
   frequencyButtonText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     color: "#666",
   },
   activeFrequencyButtonText: {
@@ -595,16 +648,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   feeLabel: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     color: "#666",
   },
   feeValue: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     fontWeight: "500",
     color: "#333",
   },
   feeTotalValue: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     fontWeight: "bold",
     color: "#333",
   },
@@ -620,7 +673,7 @@ const styles = StyleSheet.create({
   },
   transferButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     fontWeight: "bold",
   },
   securityNoteContainer: {
@@ -633,7 +686,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   securityNoteText: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10:12,
     color: "#666",
     flex: 1,
     lineHeight: 18,
@@ -649,7 +702,7 @@ const styles = StyleSheet.create({
   cardNumberInput: {
     flex: 1,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     color: "#333",
   },
   cardTypeIcon: {
@@ -670,7 +723,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   inputLabel: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10:14,
     fontWeight: "500",
     color: "#666",
     marginBottom: 8,
@@ -681,7 +734,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12:16,
     color: "#333",
   },
 

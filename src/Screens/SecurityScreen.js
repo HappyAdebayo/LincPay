@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import {
   StyleSheet,
   View,
@@ -8,11 +8,15 @@ import {
   ScrollView,
   Switch,
   Alert,
+  Platform
 } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
 import ChangePasswordModal from "../Modals/ChangePasswordModal"
 import TwoFactorModal from "../Modals/TwoFactorAuth"
 import { useNavigation } from "@react-navigation/native"
+import { useApi } from "../hooks/useApi"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+
 
 export default function SecurityScreen() {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
@@ -25,6 +29,26 @@ export default function SecurityScreen() {
   const [confirmPassword, setConfirmPassword] = useState("")
 
   const [verificationCode, setVerificationCode] = useState("")
+  const { callApi, loading, error, data } = useApi('http://192.168.74.1/lincpay_backend/api/user_api.php?action=change_password', 'POST');
+  const { callApi: callApi2fa, loading: loading2fa, error: error2fa, data: data2fa } = useApi('http://192.168.74.1/lincpay_backend/api/auth_api.php?action=create_2fa', 'POST');
+
+  useEffect(() => {
+    const fetchIs2FA = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('user');
+        if (userData) {
+          const user = JSON.parse(userData);
+          console.log('user',userData);
+          
+          setTwoFactorEnabled(user.is_2fa === 1 ? true : false);
+        }
+      } catch (error) {
+        console.error('Failed to load user data:', error);
+      }
+    };
+
+    fetchIs2FA();
+  }, []);
 
   const handleToggleTwoFactor = () => {
     if (!twoFactorEnabled) {
@@ -54,77 +78,136 @@ export default function SecurityScreen() {
     }
   }
 
-  const handleChangePassword = () => {
-    if (!currentPassword) {
-      Alert.alert("Error", "Please enter your current password")
-      return
+ const handleChangePassword = async () => {
+  try {
+    const userData = await AsyncStorage.getItem('user');
+    const parsedUser = JSON.parse(userData);
+    const user_id = parsedUser?.id;
+
+    if (!user_id) {
+      Alert.alert('Error', 'User not found in storage');
+      return;
     }
 
-    if (!newPassword) {
-      Alert.alert("Error", "Please enter a new password")
-      return
-    }
-
-    if (newPassword.length < 8) {
-      Alert.alert("Error", "New password must be at least 8 characters long")
-      return
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      Alert.alert('Validation Error', 'All fields are required');
+      return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert("Error", "New passwords do not match")
-      return
+      Alert.alert('Validation Error', 'New password and confirmation do not match');
+      return;
     }
 
-    Alert.alert("Password Changed", "Your password has been successfully updated.", [
-      {
-        text: "OK",
-        onPress: () => {
-          setShowPasswordModal(false)
-          setCurrentPassword("")
-          setNewPassword("")
-          setConfirmPassword("")
-        },
+    const response = await callApi({
+      payload: {
+        user_id,
+        old_password: currentPassword,
+        new_password: newPassword,
       },
-    ])
-  }
+    });
 
-  const handleSetupTwoFactor = () => {
-    if (!verificationCode || verificationCode.length !== 6) {
-      Alert.alert("Error", "Please enter a valid 6-digit verification code")
-      return
-    }
-
-    Alert.alert("Two-Factor Authentication Enabled", "Your account is now protected with two-factor authentication.", [
-      {
-        text: "OK",
-        onPress: () => {
-          setShowTwoFactorModal(false)
-          setTwoFactorEnabled(true)
-          setVerificationCode("")
-        },
-      },
-    ])
-  }
-
-  const handleLogoutAllDevices = () => {
-    Alert.alert(
-      "Log Out All Devices",
-      "Are you sure you want to log out of all devices? You will need to log in again on all your devices.",
-      [
+    if (response?.status === 'success') {
+      Alert.alert('Success', response.message, [
         {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Log Out All",
-          style: "destructive",
+          text: 'OK',
           onPress: () => {
-            Alert.alert("Success", "You have been logged out of all devices.")
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+            setShowPasswordModal(false);
           },
         },
-      ],
-    )
+      ]);
+    } else {
+      Alert.alert('Error', response?.message || 'Password update failed');
+    }
+  } catch (err) {
+    console.error(err);
+    Alert.alert('Error', 'Something went wrong while changing password');
   }
+};
+
+
+const handleSetupTwoFactor = async () => {
+  if (!verificationCode || verificationCode.length !== 4 || verificationCode.trim() === '') {
+    Alert.alert("Error", "Please enter a valid 4-digit verification code");
+    return;
+  }
+
+  if (!/^\d+$/.test(verificationCode)) {
+    Alert.alert("Error", "Verification code must be numeric.");
+    return;
+  }
+
+  try {
+    const userData = await AsyncStorage.getItem('user');
+    const parsedUser = JSON.parse(userData);
+    const user_id = parsedUser?.id;
+
+    if (!user_id) {
+      Alert.alert('Error', 'User not found in storage');
+      return;
+    }
+
+    const payload = {
+      user_id,
+      verificationCode: verificationCode.trim(),
+    };
+
+    const result = await callApi2fa({ payload });
+
+    if (result?.status === 'success') {
+      Alert.alert("Two-Factor Authentication Enabled", "Your account is now protected with two-factor authentication.", [
+        {
+          text: "OK",
+          onPress: () => {
+            setShowTwoFactorModal(false);
+            setTwoFactorEnabled(true);
+            setVerificationCode("");
+          },
+        },
+      ]);
+    } else {
+      Alert.alert("Error", result?.message || 'Verification failed. Please try again.');
+    }
+  } catch (error) {
+    Alert.alert("Network Error", "Please try again.");
+  }
+};
+
+const handleDisableTwoFactor = async () => {
+    try {
+      const userData = await AsyncStorage.getItem('user');
+      if (!userData) {
+        Alert.alert('Error', 'User data not found');
+        return;
+      }
+
+      const user = JSON.parse(userData);
+
+      const response = await fetch('http://your-backend-url/api.php?action=delete_2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id }),
+      });
+
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        const updatedUser = { ...user, is_2fa: 0 };
+        await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+        setTwoFactorEnabled(false);
+        Alert.alert('Success', 'Two-factor authentication disabled.');
+        setShowTwoFactorModal(false);
+      } else {
+        Alert.alert('Error', result.message || 'Failed to disable two-factor authentication.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Network error, please try again.');
+    }
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -200,20 +283,7 @@ export default function SecurityScreen() {
             </View>
           </View>
 
-          <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>Device Management</Text>
 
-            <TouchableOpacity style={[styles.securityOption, styles.logoutOption]} onPress={handleLogoutAllDevices}>
-              <View style={styles.securityOptionContent}>
-                <FontAwesome name="sign-out" size={20} color="#dc2626" style={styles.securityOptionIcon} />
-                <View>
-                  <Text style={styles.securityOptionTitle}>Log Out All Devices</Text>
-                  <Text style={styles.securityOptionDescription}>Sign out from all devices where you're logged in</Text>
-                </View>
-              </View>
-              <FontAwesome name="chevron-right" size={16} color="#666" />
-            </TouchableOpacity>
-          </View>
 
           <View style={styles.securityTipsCard}>
             <View style={styles.securityTipsHeader}>
@@ -261,6 +331,7 @@ export default function SecurityScreen() {
         confirmPassword={confirmPassword}
         setConfirmPassword={setConfirmPassword}
         handleChangePassword={handleChangePassword}
+        loading={loading}
       />
     </SafeAreaView>
   )
@@ -270,7 +341,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-    paddingVertical:30
+    paddingVertical:Platform.OS === 'ios' ? 0 : 30,
   },
   header: {
     flexDirection: "row",
@@ -296,7 +367,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: Platform.OS === 'ios' ? 15 : 20,
     fontWeight: "bold",
     color: "#333",
   },
@@ -330,7 +401,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12 : 16,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 16,
@@ -357,12 +428,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   securityOptionTitle: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12 : 16,
     fontWeight: "500",
     color: "#333",
   },
   securityOptionDescription: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10 : 12,
     color: "#666",
     marginTop: 2,
     width:200
@@ -390,7 +461,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   securityTipsTitle: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12 :16,
     fontWeight: "bold",
     color: "#333",
     marginLeft: 10,
@@ -404,7 +475,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   securityTipText: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14,
     color: "#333",
   },
   modalOverlay: {
@@ -419,7 +490,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: Platform.OS === 'ios' ? 13 : 18,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 20,
@@ -429,7 +500,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   passwordInputLabel: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14,
     fontWeight: "500",
     color: "#666",
     marginBottom: 8,
@@ -440,7 +511,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12 : 16,
   },
   passwordRequirements: {
     backgroundColor: "#f9fafb",
@@ -449,7 +520,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   passwordRequirementsTitle: {
-    fontSize: 14,
+    fontSize:Platform.OS === 'ios' ? 10 : 14,
     fontWeight: "500",
     color: "#333",
     marginBottom: 8,
@@ -463,7 +534,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   passwordRequirementText: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10 :12,
     color: "#666",
   },
   modalButtons: {
@@ -479,7 +550,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   cancelModalButtonText: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 13 :16,
     fontWeight: "500",
     color: "#666",
   },
@@ -492,7 +563,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   confirmModalButtonText: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 13 : 16,
     fontWeight: "500",
     color: "#fff",
   },
@@ -514,11 +585,11 @@ const styles = StyleSheet.create({
     borderColor: "#e5e7eb",
   },
   twoFactorQrPlaceholder: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12 :16,
     color: "#666",
   },
   twoFactorInstructions: {
-    fontSize: 14,
+    fontSize:Platform.OS === 'ios' ? 10 : 14,
     color: "#666",
     marginBottom: 8,
     textAlign: "center",
@@ -531,7 +602,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   twoFactorSecret: {
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12 : 16,
     fontWeight: "500",
     color: "#333",
     letterSpacing: 1,
@@ -545,7 +616,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 12 : 16,
     textAlign: "center",
     letterSpacing: 8,
   },

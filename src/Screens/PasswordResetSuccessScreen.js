@@ -1,4 +1,4 @@
-import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, ScrollView } from "react-native"
+import { StyleSheet, Platform, View, Text, TouchableOpacity, SafeAreaView, ScrollView } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 
@@ -78,8 +78,8 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    paddingVertical: 30,
+    // justifyContent: "center",
+    // paddingVertical: 30,
   },
   formContainer: {
     backgroundColor: "#fff",
@@ -116,14 +116,14 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#dc2626",
-    fontSize: 28,
+    fontSize: Platform.OS === 'ios' ? 20 : 28, 
     fontWeight: "bold",
     marginTop: 8,
     textAlign: "center",
   },
   description: {
     color: "#666",
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16,
     marginTop: 8,
     marginBottom: 24,
     textAlign: "center",
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   },
   nextStepsTitle: {
     color: "#333",
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16,
     fontWeight: "600",
     marginBottom: 16,
   },
@@ -158,12 +158,12 @@ const styles = StyleSheet.create({
   },
   stepNumberText: {
     color: "#fff",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14,
     fontWeight: "bold",
   },
   stepText: {
     color: "#666",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14,
     flex: 1,
   },
   button: {
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16,
     fontWeight: "600",
   },
   helpContainer: {
@@ -191,10 +191,10 @@ const styles = StyleSheet.create({
   },
   helpText: {
     color: "#666",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14,
   },
   termsText: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10 : 12,
     color: "#666",
     textAlign: "center",
   },

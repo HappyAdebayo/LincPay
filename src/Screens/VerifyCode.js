@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react"
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert } from "react-native"
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert,Platform } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 
 export default function VerifyCode() {
@@ -104,7 +104,6 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingVertical: 30,
   },
   formContainer: {
     backgroundColor: "#fff",
@@ -129,8 +128,8 @@ const styles = StyleSheet.create({
   },
   loginLinkText: {
     color: "#dc2626",
-    fontSize: 14,
     fontWeight: "600",
+    fontSize: Platform.OS === 'ios' ? 10 : 14,
   },
   content: {
     padding: 24,
@@ -141,12 +140,14 @@ const styles = StyleSheet.create({
   title: {
     color: "#dc2626",
     fontSize: 28,
+    fontSize: Platform.OS === 'ios' ? 20 : 28, 
     fontWeight: "bold",
     marginTop: 8,
   },
   description: {
     color: "#666",
     fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
     marginTop: 8,
     marginBottom: 32,
     maxWidth: "90%",
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#e2e8f0",
     borderRadius: 8,
-    fontSize: 24,
+    fontSize: Platform.OS === 'ios' ? 20 : 24, 
     fontWeight: "bold",
     backgroundColor: "#fff",
   },
@@ -177,6 +178,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16, 
     fontWeight: "600",
   },
   resendContainer: {
@@ -185,14 +187,14 @@ const styles = StyleSheet.create({
   },
   resendText: {
     color: "#666",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
   },
   resendLink: {
     color: "#dc2626",
     fontWeight: "600",
   },
   termsText: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10 : 12, 
     color: "#666",
     textAlign: "center",
   },

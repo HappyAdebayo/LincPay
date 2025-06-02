@@ -1,18 +1,45 @@
 import { useState } from "react"
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView } from "react-native"
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView,Platform } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
+import { ActivityIndicator } from "react-native"
+import { useApi } from "../hooks/useApi"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
-export default function App() {
+export default function SignUpScreen() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const navigation=useNavigation()
+const { loading, error, data, callApi } = useApi('http://192.168.74.1/lincpay_backend/api/auth_api.php?action=register', 'POST');
 
-  const handleSignUp = () => {
-    navigation.navigate('ProfileSetupScreen')
-    console.log({ username, password, confirmPassword })
+const handleSignUp = async () => {
+  if (!username || !password || !confirmPassword) {
+    alert('Please fill in all fields');
+    return;
   }
+  if (password !== confirmPassword) {
+    alert('Passwords do not match');
+    return;
+  }
+
+  const result = await callApi({ payload: { username, password } });
+
+  if (result?.status === 'success') {
+     try {
+      await AsyncStorage.setItem('user_id', String(result.user_id));
+      alert('Signup successful!');
+      navigation.navigate('ProfileSetupScreen');
+    } catch (error) {
+      alert('Failed to save user ID locally');
+    }
+  } else {
+    alert(result?.message || 'Signup failed');
+  }
+};
+
+
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -63,27 +90,20 @@ export default function App() {
                 />
               </View>
 
-              <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
-                <Text style={styles.signUpButtonText}>SIGN UP</Text>
-              </TouchableOpacity>
+              {loading ? (
+                  <View style={{ marginVertical: 20, alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#dc2626" />
+                  </View>
+                ) : (
+                  <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
+                    <Text style={styles.signUpButtonText}>SIGN UP</Text>
+                  </TouchableOpacity>
+                )}
+
+                {error && <Text style={{ color: 'red', marginTop: 10 }}>{error}</Text>}
+
             </View>
 
-            <View style={styles.socialLoginContainer}>
-              <TouchableOpacity style={styles.socialButton}>
-                <FontAwesome name="facebook" size={20} color="#3b5998" style={styles.socialIcon} />
-                <Text style={styles.socialButtonText}>Continue with Facebook</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.socialButton}>
-                <FontAwesome name="google" size={20} color="#db4437" style={styles.socialIcon} />
-                <Text style={styles.socialButtonText}>Continue with Google</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.socialButton}>
-                <FontAwesome name="apple" size={20} color="#000" style={styles.socialIcon} />
-                <Text style={styles.socialButtonText}>Continue with Apple ID</Text>
-              </TouchableOpacity>
-            </View>
 
             <Text style={styles.termsText}>
               By continuing, you agree to our <Text style={styles.termsLink}>Terms and Conditions</Text> and have read
@@ -100,21 +120,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingVertical:30
+    paddingVertical:30,
   },
   scrollContainer: {
-    flexGrow: 1,
     justifyContent: "center",
-    // padding: 20,
   },
   formContainer: {
     backgroundColor: "#fff",
     borderRadius: 10,
-    // shadowColor: "#000",
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.1,
-    // shadowRadius: 4,
-    // elevation: 3,
     position: "relative",
     overflow: "hidden",
   },
@@ -135,7 +148,7 @@ const styles = StyleSheet.create({
   },
   loginLinkText: {
     color: "#dc2626",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
     fontWeight: "600",
   },
   content: {
@@ -145,13 +158,13 @@ const styles = StyleSheet.create({
   },
   signUpTitle: {
     color: "#dc2626",
-    fontSize: 28,
+    fontSize: Platform.OS === 'ios' ? 23 : 28, 
     fontWeight: "bold",
     marginTop: 30,
   },
   signUpDescription: {
     color: "#666",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
     marginTop: 8,
     marginBottom: 24,
     maxWidth: "90%",
@@ -164,7 +177,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: "#dc2626",
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
     fontWeight: "500",
     marginBottom: 6,
   },
@@ -173,7 +186,7 @@ const styles = StyleSheet.create({
     borderColor: "#e2e8f0",
     borderRadius: 6,
     padding: 12,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16, 
     backgroundColor: "#fff",
   },
   signUpButton: {
@@ -186,12 +199,8 @@ const styles = StyleSheet.create({
   },
   signUpButtonText: {
     color: "#fff",
-    fontSize: 16,
     fontWeight: "600",
-  },
-  socialLoginContainer: {
-    marginTop: 24,
-    marginBottom: 24,
+    fontSize: Platform.OS === 'ios' ? 10 : 16, 
   },
   socialButton: {
     flexDirection: "row",
@@ -203,15 +212,8 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
   },
-  socialIcon: {
-    marginRight: 12,
-  },
-  socialButtonText: {
-    fontSize: 16,
-    color: "#333",
-  },
   termsText: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10 : 12, 
     color: "#666",
     textAlign: "center",
   },

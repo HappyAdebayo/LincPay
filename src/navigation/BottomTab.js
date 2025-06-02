@@ -1,7 +1,7 @@
 import TransactionsScreen from "../Screens/TransactionScreen";
 import ProfileScreen from "../Screens/ProfileScreen";
 import HomeScreen from "../Screens/Home";
-import { View,Text,StyleSheet,TouchableOpacity,SafeAreaView } from "react-native";
+import { View,Text,StyleSheet,TouchableOpacity,SafeAreaView,Platform } from "react-native";
 import { FontAwesome } from "@expo/vector-icons"
 import { useState } from "react";
 
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
       },
       tabLabel: {
-        fontSize: 12,
+        fontSize: Platform.OS === 'ios' ? 10 : 12,
         marginTop: 4,
       },
 })

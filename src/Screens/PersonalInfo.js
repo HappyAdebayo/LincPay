@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import {
   StyleSheet,
   View,
@@ -10,9 +10,12 @@ import {
   TextInput,
   Modal,
   Alert,
+  Platform
 } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import * as ImagePicker from 'expo-image-picker';
 
 export default function PersonalInfoScreen() {
   const navigation =useNavigation()
@@ -25,45 +28,174 @@ export default function PersonalInfoScreen() {
   })
 
   const [isEditing, setIsEditing] = useState(false)
-  const [editedData, setEditedData] = useState({ ...userData })
   const [showImageOptions, setShowImageOptions] = useState(false)
+  const [localProfileImage, setLocalProfileImage] = useState(null);
 
-  const handleSave = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(editedData.email)) {
-      Alert.alert("Invalid Email", "Please enter a valid email address")
-      return
-    }
+  const [user, setUser] = useState(null);
+const [filename, setFilename] = useState(null);
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const jsonValue = await AsyncStorage.getItem('user');
+        if (jsonValue != null) {
+          const userData = JSON.parse(jsonValue);
+          console.log('User details:', userData);
+          setUser(userData);
+        } else {
+          console.log('No user data found in AsyncStorage');
+        }
+      } catch (error) {
+        console.error('Error reading user data from AsyncStorage:', error);
+      }
+    };
 
-    if (!editedData.name.trim()) {
-      Alert.alert("Invalid Name", "Name cannot be empty")
-      return
-    }
+    fetchUserDetails();
+  }, []);
 
-    setUserData({ ...editedData })
-    setIsEditing(false)
-    Alert.alert("Success", "Your information has been updated successfully")
+const handleSave = async () => {
+   
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(user.email)) {
+        Alert.alert("Invalid Email", "Please enter a valid email address");
+        return;
+      }
+
+      if (!user.full_name.trim()) {
+        Alert.alert("Invalid Name", "Name cannot be empty");
+        return;
+      }
+
+      try {
+        const formData = new FormData();
+
+        formData.append('full_name', user.full_name);
+        formData.append('user_id', user.id);
+        formData.append('student_id', user.student_id);
+        formData.append('semester', user.semester);
+        formData.append('email', user.email);
+        formData.append('existing_image', user.profile_image);
+
+       if (localProfileImage) {
+          const localUri = localProfileImage;
+          console.log('Uploading image URI:', localUri);
+
+          const filename = localUri.split('/').pop();
+          console.log('Uploading image filename:', filename);
+          const newFilename = localUri.split('/').pop();
+          setFilename(newFilename); 
+
+          const match = /\.(\w+)$/.exec(newFilename);
+          const type = match ? `image/${match[1]}` : `image`;
+          console.log('Uploading image type:', type);
+
+          formData.append('profile_image', {
+            uri: localUri,
+            name: newFilename,
+            type: type,
+          });
+        }
+
+
+        const response = await fetch('http://192.168.74.1/lincpay_backend/api/user_api.php?action=update_profile', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        const rawText = await response.text();
+        console.log('📦 Raw API Response:', rawText);
+
+        let result;
+        try {
+          result = JSON.parse(rawText);
+        } catch (parseError) {
+          console.error('❌ Failed to parse JSON:', parseError);
+          Alert.alert('Error', 'Invalid JSON response from server.');
+          return;
+        }
+
+        if (result.status === 'success') {
+          console.log(result,'ty');
+          
+         const updatedUser = {
+            ...user,
+            profile_image: filename ? filename : user.profile_image,
+          };
+
+
+          await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+          setUser(updatedUser);
+          console.log('kj',user);
+          
+          setIsEditing(false);
+          Alert.alert('Success', result.message);
+        } else {
+          Alert.alert('Error', result.message);
+        }
+      } catch (error) {
+        console.error('🚨 API Call Error:', error);
+        if (error.message) {
+    console.error('Error message:', error.message);
   }
+        Alert.alert('Error', 'Something went wrong while updating your profile.');
+      }
+};
+useEffect(() => {
+  console.log('User updated:', user);
+}, [user]);
+
+
 
   const handleCancel = () => {
     setEditedData({ ...userData })
     setIsEditing(false)
   }
 
-  const handleChangeImage = (option) => {
-    setShowImageOptions(false)
+const handleChangeImage = async (option) => {
+  setShowImageOptions(false);
+  console.log('handleChangeImage called with option:', option);
 
-    if (option === "camera") {
-      Alert.alert("Camera", "Camera would open here to take a new profile photo")
-    } else if (option === "gallery") {
-      Alert.alert("Gallery", "Photo gallery would open here to select a profile photo")
-    } else if (option === "remove") {
-      setEditedData({ ...editedData, profileImage: null })
-      if (!isEditing) {
-        setUserData({ ...userData, profileImage: null })
-      }
+  if (option === "camera") {
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+    console.log('Camera result:', result);
+    if (!result.canceled) {
+      console.log('Setting localProfileImage:', result.assets[0].uri);
+      setLocalProfileImage(result.assets[0].uri);
     }
+  } else if (option === "gallery") {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+    console.log('Gallery result:', result);
+    if (!result.canceled) {
+      console.log('Setting localProfileImage:', result.assets[0].uri);
+      setLocalProfileImage(result.assets[0].uri);
+    }
+  } else if (option === "remove") {
+    console.log('Removing image');
+    setLocalProfileImage(null);
   }
+};
+
+const pickImage = async () => {
+  let result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    quality: 1,
+  });
+
+  if (!result.canceled) {
+    // For new versions of expo-image-picker, result.assets is an array
+    const selectedImageUri = result.assets[0].uri;
+    setLocalProfileImage(selectedImageUri);  // <-- update state with local URI
+  }
+};
 
   return (
     <SafeAreaView style={styles.container}>
@@ -71,7 +203,7 @@ export default function PersonalInfoScreen() {
         <TouchableOpacity style={styles.backButton} onPress={()=>navigation.goBack()}>
           <FontAwesome name="arrow-left" size={20} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Personal Information</Text>
+        <Text style={styles.headerTitle}>Personal</Text>
         <TouchableOpacity
           style={styles.editButton}
           onPress={() => {
@@ -91,25 +223,29 @@ export default function PersonalInfoScreen() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.content}>
           <View style={styles.profileImageSection}>
-            <TouchableOpacity
-              style={styles.profileImageContainer}
-              onPress={() => isEditing && setShowImageOptions(true)}
-              disabled={!isEditing}
-            >
-              {userData.profileImage ? (
-                <Image source={{ uri: userData.profileImage }} style={styles.profileImage} />
-              ) : (
-                <View style={styles.profileImagePlaceholder}>
-                  <Text style={styles.profileInitials}>{userData.name.charAt(0)}</Text>
-                </View>
-              )}
-              {isEditing && (
-                <View style={styles.editImageOverlay}>
-                  <FontAwesome name="camera" size={20} color="#fff" />
-                </View>
-              )}
-            </TouchableOpacity>
-            <Text style={styles.profileName}>{userData.name}</Text>
+          <TouchableOpacity
+  style={styles.profileImageContainer}
+  onPress={() => isEditing && pickImage()}  // Call your image picker here
+  disabled={!isEditing}
+>
+  {localProfileImage ? (
+    <Image source={{ uri: localProfileImage }} style={styles.profileImage} />
+  ) : user?.profile_image ? (
+    <Image source={{ uri: `http://192.168.74.1/lincpay_backend/Student_images/${user?.profile_image}` }} style={styles.profileImage} />
+  ) : (
+    <View style={styles.profileImagePlaceholder}>
+      <Text style={styles.profileInitials}>{user?.full_name.charAt(0)}</Text>
+    </View>
+  )}
+
+  {isEditing && (
+    <View style={styles.editImageOverlay}>
+      <FontAwesome name="camera" size={20} color="#fff" />
+    </View>
+  )}
+</TouchableOpacity>
+
+            <Text style={styles.profileName}>{user?.full_name}</Text>
           </View>
 
           <View style={styles.infoCard}>
@@ -121,12 +257,12 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={styles.infoInput}
-                  value={editedData.idNumber}
-                  onChangeText={(text) => setEditedData({ ...editedData, idNumber: text })}
+                  value={user?.student_id}
+                  onChangeText={(text) => setUser({...user,student_id:text})}
                   placeholder="Enter your student ID"
                 />
               ) : (
-                <Text style={styles.infoValue}>{userData.idNumber}</Text>
+                <Text style={styles.infoValue}>{user?.student_id}</Text>
               )}
             </View>
 
@@ -138,12 +274,12 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={styles.infoInput}
-                  value={editedData.semester}
-                  onChangeText={(text) => setEditedData({ ...editedData, semester: text })}
+                  value={user?.semester}
+                  onChangeText={(text) => setUser({ ...user, semester: text })}
                   placeholder="Enter your current semester"
                 />
               ) : (
-                <Text style={styles.infoValue}>{userData.semester}</Text>
+                <Text style={styles.infoValue}>{user?.semester}</Text>
               )}
             </View>
 
@@ -155,14 +291,14 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={styles.infoInput}
-                  value={editedData.email}
-                  onChangeText={(text) => setEditedData({ ...editedData, email: text })}
+                  value={user?.email}
+                  onChangeText={(text) => setUser({ ...user, email: text })}
                   placeholder="Enter your email address"
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />
               ) : (
-                <Text style={styles.infoValue}>{userData.email}</Text>
+                <Text style={styles.infoValue}>{user?.email}</Text>
               )}
             </View>
 
@@ -174,12 +310,12 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={styles.infoInput}
-                  value={editedData.name}
-                  onChangeText={(text) => setEditedData({ ...editedData, name: text })}
+                  value={user?.full_name}
+                  onChangeText={(text) => setUser({ ...user, full_name: text })}
                   placeholder="Enter your full name"
                 />
               ) : (
-                <Text style={styles.infoValue}>{userData.name}</Text>
+                <Text style={styles.infoValue}>{user?.full_name}</Text>
               )}
             </View>
           </View>
@@ -221,15 +357,6 @@ export default function PersonalInfoScreen() {
               <Text style={styles.modalOptionText}>Choose from Gallery</Text>
             </TouchableOpacity>
 
-            {userData.profileImage && (
-              <TouchableOpacity
-                style={[styles.modalOption, styles.removeOption]}
-                onPress={() => handleChangeImage("remove")}
-              >
-                <FontAwesome name="trash" size={20} color="#dc2626" style={styles.modalOptionIcon} />
-                <Text style={[styles.modalOptionText, styles.removeOptionText]}>Remove Current Photo</Text>
-              </TouchableOpacity>
-            )}
 
             <TouchableOpacity style={styles.cancelModalButton} onPress={() => setShowImageOptions(false)}>
               <Text style={styles.cancelModalButtonText}>Cancel</Text>
@@ -245,7 +372,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-    paddingVertical:30
+    paddingVertical:Platform.OS === 'ios' ? 0 : 30,
   },
   header: {
     flexDirection: "row",
@@ -271,7 +398,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize:Platform.OS === 'ios' ? 13 : 20,
     fontWeight: "bold",
     color: "#333",
   },
@@ -284,7 +411,7 @@ const styles = StyleSheet.create({
   editButtonText: {
     color: "#fff",
     fontWeight: "600",
-    fontSize: 14,
+    fontSize:Platform.OS === 'ios' ? 10 : 14,
   },
   topLeftCorner: {
     position: "absolute",
@@ -351,7 +478,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   profileName: {
-    fontSize: 24,
+    fontSize:Platform.OS === 'ios' ? 16 : 24,
     fontWeight: "bold",
     color: "#333",
   },
@@ -378,17 +505,17 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   infoLabel: {
-    fontSize: 14,
+    fontSize:Platform.OS === 'ios' ? 12 : 14,
     color: "#666",
     fontWeight: "500",
   },
   infoValue: {
-    fontSize: 16,
+    fontSize:Platform.OS === 'ios' ? 10 : 16,
     color: "#333",
     fontWeight: "500",
   },
   infoInput: {
-    fontSize: 16,
+    fontSize:Platform.OS === 'ios' ? 10 : 16,
     color: "#333",
     borderWidth: 1,
     borderColor: "#e5e7eb",
@@ -408,15 +535,15 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   additionalInfoTitle: {
-    fontSize: 16,
+    fontSize:Platform.OS === 'ios' ? 13 : 16,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 10,
   },
   additionalInfoText: {
-    fontSize: 14,
+    fontSize:Platform.OS === 'ios' ? 10 : 14,
     color: "#666",
-    lineHeight: 20,
+    lineHeight: Platform.OS === 'ios' ? 15 : 20,
   },
   cancelButton: {
     backgroundColor: "#f3f4f6",
@@ -427,7 +554,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: "#666",
-    fontSize: 16,
+    fontSize:Platform.OS === 'ios' ? 10 : 16,
     fontWeight: "600",
   },
   modalOverlay: {

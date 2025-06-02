@@ -8,12 +8,16 @@ import {
   ScrollView,
   TextInput,
   Modal,
+  Image,
   Alert,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator
 } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import * as ImagePicker from 'expo-image-picker';
 
 export default function ProfileSetupScreen() {
   const [fullName, setFullName] = useState("")
@@ -71,15 +75,56 @@ export default function ProfileSetupScreen() {
     return isValid
   }
 
-  const handleSubmit = () => {
-    if (!validateForm()) {
-      return
+const handleSubmit = async () => {
+  if (!validateForm()) {
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const userId = await AsyncStorage.getItem('user_id');
+
+    if (!userId) {
+      throw new Error('User ID not found in local storage.');
     }
 
-    setIsSubmitting(true)
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('fullName', fullName.trim());
+    formData.append('studentId', studentId.trim());
+    formData.append('semester', semester.trim());
+    formData.append('email', email.trim());
 
-    setTimeout(() => {
-      setIsSubmitting(false)
+    if (profileImage) {
+      formData.append('image', {
+        uri: profileImage,
+        name: 'profile.jpg',
+        type: 'image/jpeg',
+      });
+    }
+
+    const response = await fetch("http://192.168.74.1/lincpay_backend/api/auth_api.php?action=studentdetails", {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    const text = await response.text();
+    console.log("Raw response text:", text);
+
+    let json;
+    try {
+      json = JSON.parse(text);
+    } catch (parseError) {
+      console.error("JSON parse error:", parseError);
+      Alert.alert("Error", "Unexpected server response. Try again later.");
+      return;
+    }
+
+    if (json?.status === 'success') {
       Alert.alert(
         "Profile Setup Complete",
         "Your profile has been successfully set up. You can now use all features of Lincpay.",
@@ -87,28 +132,69 @@ export default function ProfileSetupScreen() {
           {
             text: "Continue to App",
             onPress: () => {
-              navigation.navigate('Login')
-              console.log("Navigate to home screen")
+              navigation.navigate('Login');
+              console.log("Navigate to login screen");
             },
           },
         ],
-      )
-    }, 1500)
-  }
-
-  const handleChangeImage = (option) => {
-    setShowImageOptions(false)
-
-    if (option === "camera") {
-      Alert.alert("Camera", "Camera would open here to take a new profile photo")
-      setProfileImage("placeholder")
-    } else if (option === "gallery") {
-      Alert.alert("Gallery", "Photo gallery would open here to select a profile photo")
-      setProfileImage("placeholder")
-    } else if (option === "remove") {
-      setProfileImage(null)
+      );
+    } else {
+      Alert.alert("Error", "Please fix the errors and try again.");
+      console.log("Validation Errors:", json.errors);
     }
+
+  } catch (error) {
+    console.log("API call error:", error);
+    Alert.alert("Error", "Failed to set up profile. Please try again.");
+  } finally {
+    setIsSubmitting(false);
   }
+};
+
+
+
+const handleChangeImage = async (option) => {
+  setShowImageOptions(false);
+
+  if (option === 'camera') {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Camera permission is required to take a photo.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  } else if (option === 'gallery') {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Permission to access gallery is required.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  } else if (option === 'remove') {
+    setProfileImage(null);
+  }
+};
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -131,10 +217,8 @@ export default function ProfileSetupScreen() {
             <View style={styles.profileImageSection}>
               <TouchableOpacity style={styles.profileImageContainer} onPress={() => setShowImageOptions(true)}>
                 {profileImage ? (
-                  <View style={styles.profileImagePlaceholder}>
-                    <FontAwesome name="user" size={60} color="#fff" />
-                  </View>
-                ) : (
+                    <Image source={{ uri: profileImage }} style={styles.profileImage} />
+                  ) : (
                   <View style={styles.profileImagePlaceholder}>
                     <FontAwesome name="camera" size={40} color="#fff" />
                     <Text style={styles.addPhotoText}>Add Photo</Text>
@@ -211,6 +295,11 @@ export default function ProfileSetupScreen() {
               </View>
             </View>
 
+            {isSubmitting ? (
+                  <View style={{ marginVertical: 20, alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#dc2626" />
+                  </View>
+                ) : (
             <TouchableOpacity
               style={[styles.submitButton, isSubmitting && styles.disabledButton]}
               onPress={handleSubmit}
@@ -218,7 +307,7 @@ export default function ProfileSetupScreen() {
             >
               <Text style={styles.submitButtonText}>{isSubmitting ? "SETTING UP PROFILE..." : "COMPLETE SETUP"}</Text>
             </TouchableOpacity>
-
+            )}
             <Text style={styles.privacyNote}>
               By completing your profile, you agree to our <Text style={styles.privacyLink}>Terms of Service</Text> and{" "}
               <Text style={styles.privacyLink}>Privacy Policy</Text>.
@@ -284,6 +373,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 24,
+    fontSize: Platform.OS === 'ios' ? 18 : 24,
     fontWeight: "bold",
     color: "#333",
   },
@@ -317,6 +407,7 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16, 
     color: "#666",
     textAlign: "center",
     marginTop: 10,
@@ -330,7 +421,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: "#dc2626",
+    backgroundColor: "transparent",
     justifyContent: "center",
     alignItems: "center",
     elevation: 3,
@@ -338,6 +429,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
+  },
+  profileImage:{
+     width: 120,
+    height: 120,
+    borderRadius: 60,
   },
   profileImagePlaceholder: {
     width: "100%",
@@ -350,7 +446,7 @@ const styles = StyleSheet.create({
   addPhotoText: {
     color: "#fff",
     marginTop: 5,
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
   },
   formContainer: {
     backgroundColor: "#fff",
@@ -367,7 +463,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   inputLabel: {
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 10 : 14, 
     fontWeight: "500",
     color: "#666",
     marginBottom: 8,
@@ -378,7 +474,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16, 
     color: "#333",
   },
   inputError: {
@@ -386,7 +482,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: "#dc2626",
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10 : 12, 
     marginTop: 4,
   },
   submitButton: {
@@ -401,11 +497,11 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: Platform.OS === 'ios' ? 10 : 16, 
     fontWeight: "bold",
   },
   privacyNote: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 10 : 12, 
     color: "#666",
     textAlign: "center",
     lineHeight: 18,

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity } from 'react-native';
 
 const TwoFactorModal = ({
@@ -20,26 +19,15 @@ const TwoFactorModal = ({
         <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
           <Text style={styles.modalTitle}>Set Up Two-Factor Authentication</Text>
 
-          <View style={styles.twoFactorQrContainer}>
-            <View style={styles.twoFactorQrCode}>
-              <Text style={styles.twoFactorQrPlaceholder}>QR Code</Text>
-            </View>
-            <Text style={styles.twoFactorInstructions}>1. Open your authenticator app</Text>
-            <Text style={styles.twoFactorInstructions}>2. Scan this QR code or enter the code below</Text>
-            <View style={styles.twoFactorSecretContainer}>
-              <Text style={styles.twoFactorSecret}>ABCD-EFGH-IJKL-MNOP</Text>
-            </View>
-            <Text style={styles.twoFactorInstructions}>3. Enter the 6-digit verification code</Text>
-          </View>
-
+    
           <View style={styles.verificationCodeContainer}>
             <TextInput
               style={styles.verificationCodeInput}
               value={verificationCode}
               onChangeText={setVerificationCode}
-              placeholder="Enter 6-digit code"
+              placeholder="Enter 4-digit code"
               keyboardType="number-pad"
-              maxLength={6}
+              maxLength={4}
             />
           </View>
 
@@ -51,10 +39,10 @@ const TwoFactorModal = ({
             <TouchableOpacity
               style={[
                 styles.confirmModalButton,
-                (!verificationCode || verificationCode.length !== 6) && styles.disabledButton,
+                (!verificationCode || verificationCode.length !== 4) && styles.disabledButton,
               ]}
               onPress={handleSetupTwoFactor}
-              disabled={!verificationCode || verificationCode.length !== 6}
+              disabled={!verificationCode || verificationCode.length !== 4}
             >
               <Text style={styles.confirmModalButtonText}>Verify</Text>
             </TouchableOpacity>
