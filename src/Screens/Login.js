@@ -12,7 +12,6 @@ export default function LoginScreen() {
   const { loading, data, callApi } = useApi('http://192.168.74.1/lincpay_backend/api/auth_api.php?action=login', 'POST');
 
   const handleLogin =async () => {
-     navigation.navigate('Auth')
     if (!username || !password) {
       Alert.alert('Validation Error', 'Username and password are required.');
       return;

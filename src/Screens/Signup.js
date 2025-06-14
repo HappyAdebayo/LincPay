@@ -11,9 +11,10 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const navigation=useNavigation()
-const { loading, error, data, callApi } = useApi('http://192.168.74.1/lincpay_backend/api/auth_api.php?action=register', 'POST');
+const { loading, error, data, callApi } = useApi('http://192.168.74.1:8080/lincpay_backend/api/auth_api.php?action=register', 'POST');
 
 const handleSignUp = async () => {
+
   if (!username || !password || !confirmPassword) {
     alert('Please fill in all fields');
     return;

@@ -18,7 +18,7 @@ export default function Auth() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const fullCode = code.join('');
     if (fullCode.length < 4) {
       Alert.alert('Incomplete Code', 'Please enter all 4 digits');
@@ -26,13 +26,41 @@ export default function Auth() {
     }
     // Replace this with your verification logic
     console.log('Submitted code:', fullCode);
-    Alert.alert('Code Submitted', `You entered: ${fullCode}`);
+     const response = await callApi({
+      payload: { username, password },
+    });
+    console.log(response);
+    
+    if (response?.status === 'success') {
+       await AsyncStorage.setItem('user', JSON.stringify(response.user));
+       Alert.alert('Success', 'Login successful!');
+       navigation.replace('BottomTab')
+    }else if(response?.status =="not_validated"){
+       try {
+      await AsyncStorage.setItem('user_id', String(response.user_id));
+      navigation.navigate('ProfileSetupScreen')
+    } catch (error) {
+      alert('Failed to save user ID locally');
+    }
+    } 
+    else if (response?.message) {
+      Alert.alert('Login Failed', response.message);
+    }
   };
+
+    const handleLogin =async () => {
+     navigation.navigate('Auth')
+    if (!username || !password) {
+      Alert.alert('Validation Error', 'Username and password are required.');
+      return;
+    }
+    
+   
+  }
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#FF0000" />
-      <Text style={styles.title}>Enter 4-digit Code</Text>
       <View style={styles.inputContainer}>
         {code.map((digit, index) => (
           <TextInput
