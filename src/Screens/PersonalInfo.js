@@ -25,6 +25,8 @@ export default function PersonalInfoScreen() {
     semester: "Fall 2023",
     email: "alex.johnson@university.edu",
     profileImage: null,
+    department:"",
+    intake:""
   })
 
   const [isEditing, setIsEditing] = useState(false)
@@ -281,6 +283,22 @@ const pickImage = async () => {
               ) : (
                 <Text style={styles.infoValue}>{user?.semester}</Text>
               )}
+            </View>
+
+            <View style={styles.infoRow}>
+              <View style={styles.infoLabelContainer}>
+                <FontAwesome name="university" size={16} color="#dc2626" style={styles.infoIcon} />
+                <Text style={styles.infoLabel}>Department</Text>
+              </View>
+                <Text style={styles.infoValue}>{user?.department}</Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <View style={styles.infoLabelContainer}>
+                <FontAwesome name="calendar" size={16} color="#dc2626" style={styles.infoIcon} />
+                <Text style={styles.infoLabel}>Intake</Text>
+              </View>
+                <Text style={styles.infoValue}>{user?.intake}</Text>
             </View>
 
             <View style={styles.infoRow}>
