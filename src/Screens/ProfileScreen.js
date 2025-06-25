@@ -59,17 +59,17 @@ useEffect(() => {
         </View>
         <Text style={styles.profileName}>{user.full_name}</Text>
         <Text style={styles.profileEmail}>{user.email}</Text>
-        {/* <View style={styles.profileStats}>
+        <View style={styles.profileStats}>
           <View style={styles.profileStat}>
-            <Text style={styles.profileStatValue}>$1,245.80</Text>
-            <Text style={styles.profileStatLabel}>Balance</Text>
+            <Text style={styles.profileStatValue}>{user.intake}</Text>
+            <Text style={styles.profileStatLabel}>Intake</Text>
           </View>
           <View style={styles.profileStatDivider} />
           <View style={styles.profileStat}>
-            <Text style={styles.profileStatValue}>24</Text>
-            <Text style={styles.profileStatLabel}>Transactions</Text>
+            <Text style={styles.profileStatValue}>{user.department}</Text>
+            <Text style={styles.profileStatLabel}>Department</Text>
           </View>
-        </View> */}
+        </View>
       </View>
 
       <View style={styles.profileSection}>

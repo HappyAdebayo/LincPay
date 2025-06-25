@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView,Platform } from "react-native"
-import { FontAwesome } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import { ActivityIndicator } from "react-native"
 import { useApi } from "../hooks/useApi"

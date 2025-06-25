@@ -1,4 +1,4 @@
-import { StyleSheet, View, Text,Platform, TouchableOpacity, ScrollView} from "react-native"
+import { StyleSheet, View, Text,Platform,Alert, TouchableOpacity, ScrollView} from "react-native"
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons"
 import { QuickActions} from "../Data/Data";
 import { PaymentOptions } from "../Data/Data";
@@ -57,9 +57,10 @@ export default HomeScreen = ({ setActiveTab }) => {
              
             if (response && response.status === 'success') {
               setAmount(response.balance);
-            } else {
-              Alert.alert("Error", response?.message || "Transfer failed");
-            }
+            } 
+            // else {
+            //   Alert.alert("Error", response?.message || "Transfer failed");
+            // }
 
       } catch (error) {
         console.error('Failed to load username', error);

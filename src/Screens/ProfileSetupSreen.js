@@ -18,12 +18,16 @@ import { FontAwesome } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import * as ImagePicker from 'expo-image-picker';
+import { Picker } from "@react-native-picker/picker"
 
 export default function ProfileSetupScreen() {
   const [fullName, setFullName] = useState("")
   const [studentId, setStudentId] = useState("")
+  const [Intake, setIntake]=useState("")
   const [semester, setSemester] = useState("")
   const [email, setEmail] = useState("")
+  const [department, setDepartment] = useState('');
+
   const [profileImage, setProfileImage] = useState(null)
   const [showImageOptions, setShowImageOptions] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -34,6 +38,8 @@ export default function ProfileSetupScreen() {
     studentId: "",
     semester: "",
     email: "",
+    Intake:"",
+    department:""
   })
 
   const validateForm = () => {
@@ -43,6 +49,8 @@ export default function ProfileSetupScreen() {
       studentId: "",
       semester: "",
       email: "",
+      Intake:"",
+      department:""
     }
 
     if (!fullName.trim()) {
@@ -60,6 +68,16 @@ export default function ProfileSetupScreen() {
 
     if (!semester.trim()) {
       newErrors.semester = "Semester is required"
+      isValid = false
+    }
+
+    if (!Intake.trim()) {
+      newErrors.Intake = "Intake is required"
+      isValid = false
+    }
+
+    if (!department.trim()) {
+      newErrors.department = "Intake is required"
       isValid = false
     }
 
@@ -95,6 +113,8 @@ const handleSubmit = async () => {
     formData.append('studentId', studentId.trim());
     formData.append('semester', semester.trim());
     formData.append('email', email.trim());
+    formData.append('intake', Intake.trim());
+    formData.append('department', department.trim());
 
     if (profileImage) {
       formData.append('image', {
@@ -258,6 +278,45 @@ const handleChangeImage = async (option) => {
                   placeholder="Enter your student ID"
                 />
                 {errors.studentId ? <Text style={styles.errorText}>{errors.studentId}</Text> : null}
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Student Intake</Text>
+                <TextInput
+                  style={[styles.input, errors.Intake ? styles.inputError : null]}
+                  value={Intake}
+                  onChangeText={(text) => {
+                    setIntake(text)
+                    if (errors.Intake) {
+                      setErrors({ ...errors, Intake: "" })
+                    }
+                  }}
+                  placeholder="Enter your Intake"
+                />
+                {errors.Intake ? <Text style={styles.errorText}>{errors.Intake}</Text> : null}
+              </View>
+
+             <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Department</Text>
+                <View style={[styles.pickerWrapper, errors.department ? styles.inputError : null]}>
+                  <Picker
+                    selectedValue={department}
+                    onValueChange={(itemValue) => {
+                      setDepartment(itemValue);
+                      if (errors.department) {
+                        setErrors({ ...errors, department: "" });
+                      }
+                    }}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="Select your department" value="" />
+                    <Picker.Item label="Computer Science" value="cse" />
+                    <Picker.Item label="Mass Communication" value="mc" />
+                    <Picker.Item label="Nursing" value="nursing" />
+                    <Picker.Item label="Business" value="business" />
+                  </Picker>
+                </View>
+                {errors.department ? <Text style={styles.errorText}>{errors.department}</Text> : null}
               </View>
 
               <View style={styles.inputContainer}>
@@ -563,4 +622,16 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#333",
   },
+  pickerWrapper: {
+  borderWidth: 1,
+  borderColor: '#ccc',
+  borderRadius: 8,
+  overflow: 'hidden',
+  marginTop: 8,
+},
+picker: {
+  height: 50,
+  width: '100%',
+},
+
 })
