@@ -1,16 +1,20 @@
 import { useState } from "react"
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert,Platform } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
-import { useNavigation } from "@react-navigation/native"
+import { useNavigation,useRoute } from "@react-navigation/native"
+import { useApi } from "../hooks/useApi"
 
 export default function ResetPasswordScreen() {
+  const route =useRoute();
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const navigation=useNavigation()
+  const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/user_api.php?action=reset_password_code', 'POST');
+  const { code } = route.params;
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     if (newPassword.length < 8) {
       Alert.alert("Password Too Short", "Your password must be at least 8 characters long")
       return
@@ -20,9 +24,28 @@ export default function ResetPasswordScreen() {
       Alert.alert("Passwords Don't Match", "Please make sure your passwords match")
       return
     }
-    navigation.navigate('PasswordResetSuccessScreen')
-    console.log({ newPassword })
-    Alert.alert("Success", "Your password has been reset successfully!")
+
+        try {
+     
+      const payload = {
+        code,
+        new_password:newPassword
+      };
+
+      const response = await callApi({ payload });
+       console.log('response', response);
+       
+      if (response && response.status === 'success') {
+        navigation.navigate('PasswordResetSuccessScreen')
+        Alert.alert("Success", response?.message || "Transfer Success");
+      } else {
+        Alert.alert("Error", response?.message || "Transfer failed");
+      }
+    } catch (e) {
+      Alert.alert("Error", "An unexpected error occurred.");
+      console.error(e);
+    }
+   
   }
 
   return (
@@ -93,7 +116,7 @@ export default function ResetPasswordScreen() {
                 </Text>
               </View>
 
-              <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
+              <TouchableOpacity style={styles.button} onPress={handleResetPassword} disabled={loading}>
                 <Text style={styles.buttonText}>RESET PASSWORD</Text>
               </TouchableOpacity>
             </View>

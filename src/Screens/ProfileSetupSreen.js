@@ -104,7 +104,7 @@ const handleSubmit = async () => {
       });
     }
 
-    const response = await fetch("http://192.168.74.1/lincpay_backend/api/auth_api.php?action=studentdetails", {
+    const response = await fetch("http://192.168.209.1:8080/lincpay_backend/api/auth_api.php?action=studentdetails", {
       method: 'POST',
       body: formData,
       headers: {
@@ -139,7 +139,7 @@ const handleSubmit = async () => {
         ],
       );
     } else {
-      Alert.alert("Error", "Please fix the errors and try again.");
+      Alert.alert("Error", json.errors);
       console.log("Validation Errors:", json.errors);
     }
 

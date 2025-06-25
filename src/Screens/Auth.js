@@ -1,10 +1,14 @@
 import { useRef, useState } from 'react';
 import { View, Text, TextInput,Platform, StyleSheet, StatusBar, TouchableOpacity, Alert } from 'react-native';
+import { useApi } from '../hooks/useApi';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
 export default function Auth() {
   const [code, setCode] = useState(['', '', '', '']);
   const inputs = useRef([]);
-
+  const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/auth_api.php?action=validate_2fa_code', 'POST');
+  const navigation =useNavigation()
   const handleChange = (text, index) => {
     const newCode = [...code];
     newCode[index] = text;
@@ -24,40 +28,34 @@ export default function Auth() {
       Alert.alert('Incomplete Code', 'Please enter all 4 digits');
       return;
     }
+
+    const userId = await AsyncStorage.getItem('user_id');
+
+    if (!userId) {
+      throw new Error('User ID not found in local storage.');
+    }
+    console.log(userId);
+    
     // Replace this with your verification logic
     console.log('Submitted code:', fullCode);
      const response = await callApi({
-      payload: { username, password },
+      payload: { user_id:userId, code:fullCode },
     });
     console.log(response);
+    console.log('this isme')
+
+    
     
     if (response?.status === 'success') {
        await AsyncStorage.setItem('user', JSON.stringify(response.user));
        Alert.alert('Success', 'Login successful!');
        navigation.replace('BottomTab')
-    }else if(response?.status =="not_validated"){
-       try {
-      await AsyncStorage.setItem('user_id', String(response.user_id));
-      navigation.navigate('ProfileSetupScreen')
-    } catch (error) {
-      alert('Failed to save user ID locally');
-    }
-    } 
-    else if (response?.message) {
+    }else if(response?.status =="error"){
       Alert.alert('Login Failed', response.message);
     }
   };
-
-    const handleLogin =async () => {
-     navigation.navigate('Auth')
-    if (!username || !password) {
-      Alert.alert('Validation Error', 'Username and password are required.');
-      return;
-    }
     
    
-  }
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#FF0000" />
@@ -76,7 +74,7 @@ export default function Auth() {
         ))}
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+      <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
         <Text style={styles.buttonText}>Submit</Text>
       </TouchableOpacity>
     </View>

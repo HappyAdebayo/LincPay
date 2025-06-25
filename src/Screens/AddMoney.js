@@ -8,55 +8,67 @@ import {
   SafeAreaView,
   ScrollView,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  ActivityIndicator
 } from "react-native"
 import { FontAwesome} from "@expo/vector-icons"
-import { SavedPaymentMethods } from "../Data/Data"
 import { useNavigation } from "@react-navigation/native"
+import { useApi } from "../hooks/useApi"
+import PaymentWebView from "../Modals/paymentModal"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
 export default function AddMoneyScreen() {
   const [amount, setAmount] = useState("")
-  const [selectedMethod, setSelectedMethod] = useState(null)
-  const [saveCard, setSaveCard] = useState(false)
-  const [cardNumber, setCardNumber] = useState("")
-  const [expiryDate, setExpiryDate] = useState("")
-  const [cvv, setCvv] = useState("")
-  const [cardholderName, setCardholderName] = useState("")
   const navigation=useNavigation()
+  const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/payment_api.php?action=transfer', 'POST');
+  const [paymentUrl, setPaymentUrl] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const formatCardNumber = (text) => {
-    const cleaned = text.replace(/\D/g, "")
-    const formatted = cleaned.replace(/(\d{4})(?=\d)/g, "$1 ")
-    return formatted.slice(0, 19)
+  const handleAddMoney = async () => {
+
+    if (!amount || Number.parseFloat(amount) <= 0) {
+        Alert.alert("Invalid amount", "Please enter a valid amount greater than zero.");
+        return;
+      }
+
+          try {
+            const userDataJSON = await AsyncStorage.getItem('user');
+            if (!userDataJSON) {
+              Alert.alert("User data missing", "Please login again.");
+              return;
+            }
+            const userData = JSON.parse(userDataJSON);
+            console.log('userdata',userData);
+            
+            const user_id = userData.id;
+            const email =userData.email
+            if (!user_id) {
+              Alert.alert("User ID missing", "Please login again.");
+              return;
+            }
+      
+            const payload = {
+              amount: Number.parseFloat(amount),
+              user_id,
+              email
+            };
+      
+            const response = await callApi({ payload });
+             console.log('response', response);
+             
+            if (response && response.status === 'success') {
+               setPaymentUrl(response.data.authorization_url);
+            setModalVisible(true);
+              setAmount('');
+            } else {
+              Alert.alert("Error", response?.message || "Transfer failed");
+            }
+          } catch (e) {
+            Alert.alert("Error", "An unexpected error occurred.");
+            console.error(e);
+          }
   }
 
-  const formatExpiryDate = (text) => {
-    const cleaned = text.replace(/\D/g, "")
-    if (cleaned.length >= 2) {
-      return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}`
-    }
-    return cleaned
-  }
-
-  const handleAddMoney = () => {
-    console.log({
-      amount,
-      selectedMethod,
-      cardDetails: selectedMethod ? null : { cardNumber, expiryDate, cvv, cardholderName, saveCard },
-    })
-    alert(`$${amount} will be added to your account`)
-  }
-
-  const getCardIcon = (type) => {
-    switch (type) {
-      case "visa":
-        return <FontAwesome name="cc-visa" size={24} color="#1434CB" />
-      case "mastercard":
-        return <FontAwesome name="cc-mastercard" size={24} color="#EB001B" />
-      default:
-        return <FontAwesome name="credit-card" size={24} color="#666" />
-    }
-  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -79,7 +91,7 @@ export default function AddMoneyScreen() {
             <View style={styles.amountContainer}>
               <Text style={styles.amountLabel}>Amount</Text>
               <View style={styles.amountInputContainer}>
-                <Text style={styles.currencySymbol}>$</Text>
+                <Text style={styles.currencySymbol}>₦</Text>
                 <TextInput
                   style={styles.amountInput}
                   value={amount}
@@ -89,7 +101,7 @@ export default function AddMoneyScreen() {
                   placeholderTextColor="#999"
                 />
               </View>
-              <Text style={styles.balanceText}>Available Balance: $1,245.80</Text>
+              {/* <Text style={styles.balanceText}>Available Balance: ₦1,245.80</Text> */}
             </View>
 
             <View style={styles.quickAmountContainer}>
@@ -97,153 +109,34 @@ export default function AddMoneyScreen() {
                 style={styles.quickAmountButton}
                 onPress={() => setAmount("10")}
               >
-                <Text style={styles.quickAmountText}>$10</Text>
+                <Text style={styles.quickAmountText}>₦10</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.quickAmountButton}
                 onPress={() => setAmount("25")}
               >
-                <Text style={styles.quickAmountText}>$25</Text>
+                <Text style={styles.quickAmountText}>₦25</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.quickAmountButton}
                 onPress={() => setAmount("50")}
               >
-                <Text style={styles.quickAmountText}>$50</Text>
+                <Text style={styles.quickAmountText}>₦50</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.quickAmountButton}
                 onPress={() => setAmount("100")}
               >
-                <Text style={styles.quickAmountText}>$100</Text>
+                <Text style={styles.quickAmountText}>₦100</Text>
               </TouchableOpacity>
             </View>
 
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Payment Method</Text>
-
-              {SavedPaymentMethods.map((method) => (
-                <TouchableOpacity
-                  key={method.id}
-                  style={[
-                    styles.paymentMethodItem,
-                    selectedMethod === method.id && styles.selectedPaymentMethod,
-                  ]}
-                  onPress={() => setSelectedMethod(method.id)}
-                >
-                  <View style={styles.paymentMethodIcon}>{getCardIcon(method.type)}</View>
-                  <View style={styles.paymentMethodDetails}>
-                    <Text style={styles.paymentMethodTitle}>
-                      {method.type.charAt(0).toUpperCase() + method.type.slice(1)} •••• {method.lastFour}
-                    </Text>
-                    <Text style={styles.paymentMethodSubtitle}>Expires {method.expiryDate}</Text>
-                  </View>
-                  <View style={styles.radioButton}>
-                    {selectedMethod === method.id && <View style={styles.radioButtonInner} />}
-                  </View>
-                </TouchableOpacity>
-              ))}
-
-              <TouchableOpacity
-                style={[
-                  styles.paymentMethodItem,
-                  selectedMethod === null && styles.selectedPaymentMethod,
-                ]}
-                onPress={() => setSelectedMethod(null)}
-              >
-                <View style={[styles.paymentMethodIcon, { backgroundColor: "#f3f4f6" }]}>
-                  <FontAwesome name="plus" size={20} color="#dc2626" />
-                </View>
-                <View style={styles.paymentMethodDetails}>
-                  <Text style={styles.paymentMethodTitle}>Add New Card</Text>
-                  <Text style={styles.paymentMethodSubtitle}>Add a new credit or debit card</Text>
-                </View>
-                <View style={styles.radioButton}>
-                  {selectedMethod === null && <View style={styles.radioButtonInner} />}
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            {selectedMethod === null && (
-              <View style={styles.cardFormContainer}>
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Card Number</Text>
-                  <View style={styles.cardNumberContainer}>
-                    <TextInput
-                      style={styles.cardNumberInput}
-                      value={cardNumber}
-                      onChangeText={(text) => setCardNumber(formatCardNumber(text))}
-                      placeholder="1234 5678 9012 3456"
-                      keyboardType="number-pad"
-                      maxLength={19}
-                    />
-                    <View style={styles.cardTypeIcon}>
-                      <FontAwesome name="credit-card" size={20} color="#666" />
-                    </View>
-                  </View>
-                </View>
-
-                <View style={styles.rowContainer}>
-                  <View style={[styles.inputContainer, { flex: 1, marginRight: 10 }]}>
-                    <Text style={styles.inputLabel}>Expiry Date</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={expiryDate}
-                      onChangeText={(text) => setExpiryDate(formatExpiryDate(text))}
-                      placeholder="MM/YY"
-                      keyboardType="number-pad"
-                      maxLength={5}
-                    />
-                  </View>
-                  <View style={[styles.inputContainer, { flex: 1 }]}>
-                    <Text style={styles.inputLabel}>CVV</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={cvv}
-                      onChangeText={setCvv}
-                      placeholder="123"
-                      keyboardType="number-pad"
-                      maxLength={3}
-                      secureTextEntry
-                    />
-                  </View>
-                </View>
-
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Cardholder Name</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={cardholderName}
-                    onChangeText={setCardholderName}
-                    placeholder="John Doe"
-                  />
-                </View>
-
-                <TouchableOpacity
-                  style={styles.saveCardContainer}
-                  onPress={() => setSaveCard(!saveCard)}
-                >
-                  <View style={styles.checkbox}>
-                    {saveCard && <FontAwesome name="check" size={14} color="#fff" />}
-                  </View>
-                  <Text style={styles.saveCardText}>Save this card for future payments</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            <View style={styles.feeContainer}>
-              <View style={styles.feeRow}>
-                <Text style={styles.feeLabel}>Processing Fee</Text>
-                <Text style={styles.feeValue}>$0.00</Text>
-              </View>
-              <View style={styles.feeRow}>
-                <Text style={styles.feeLabel}>Total Amount</Text>
-                <Text style={styles.feeTotalValue}>
-                  ${amount ? (parseFloat(amount) + 0).toFixed(2) : "0.00"}
-                </Text>
-              </View>
-            </View>
-
+            
+            {loading ? (
+                              <View style={{  alignItems: 'center' }}>
+                                <ActivityIndicator size="large" color="#dc2626" />
+                              </View>
+                            ) : (
             <TouchableOpacity
               style={[
                 styles.addMoneyButton,
@@ -254,6 +147,7 @@ export default function AddMoneyScreen() {
             >
               <Text style={styles.addMoneyButtonText}>ADD MONEY</Text>
             </TouchableOpacity>
+                            )}
 
             <View style={styles.securityNoteContainer}>
               <FontAwesome name="lock" size={16} color="#666" style={styles.securityIcon} />
@@ -262,6 +156,15 @@ export default function AddMoneyScreen() {
               </Text>
             </View>
           </View>
+
+            {modalVisible && (
+                  <PaymentWebView 
+                    visible={modalVisible} 
+                    url={paymentUrl} 
+                    onClose={() => setModalVisible(false)}
+                    // verifyPayment={verifyPayment} 
+                  />
+                )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -1,12 +1,14 @@
-import { StyleSheet,View,Text,TouchableOpacity,FlatList,Platform } from "react-native"
-import {RecentTransactions} from "../Data/Data"
+import { StyleSheet,View,Text,TouchableOpacity,FlatList,Platform,Alert} from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useApi } from "../hooks/useApi"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
 export default TransactionsScreen = () => {
   const [selectedFilter, setSelectedFilter] = useState("all");
-
-  const filteredTransactions = RecentTransactions.filter((item) => {
+  const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/user_api.php?action=get_transactions', 'POST');
+  const [recentTransactions, setRecentTransactions]=useState([]);
+  const filteredTransactions = recentTransactions.filter((item) => {
     if (selectedFilter === "all") {
       return true;
     } else {
@@ -14,6 +16,47 @@ export default TransactionsScreen = () => {
     }
   });
 
+
+
+     useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const userDataJSON = await AsyncStorage.getItem('user');
+      if (!userDataJSON) {
+        Alert.alert("User data missing", "Please login again.");
+        return;
+      }
+      const userData = JSON.parse(userDataJSON);
+      console.log('userdata',userData);
+      
+      const user_id = userData.id;
+
+      if (!user_id) {
+        Alert.alert("User ID missing", "Please login again.");
+        return;
+      }
+
+        const payload = {
+        user_id
+      };
+
+      const response = await callApi({ payload });
+             
+            if (response && response.status === 'success') {
+              console.log('notification', response.data);
+              
+              setRecentTransactions(response.data);
+            } else {
+              Alert.alert("Error", response?.message || "Transfer failed");
+            }
+
+      } catch (error) {
+        console.error('Failed to load username', error);
+      }
+    };
+
+    fetchTransactions();
+  }, []); 
   return (
     <View style={styles.screenContainer}>
       <View style={styles.screenHeader}>
@@ -66,7 +109,7 @@ export default TransactionsScreen = () => {
                   },
                 ]}
               >
-                {item.type === "expense" ? "-" : "+"}${Math.abs(item.amount).toFixed(2)}
+                {item.type === "expense" ? "-" : "+"}₦{Math.abs(item.amount).toFixed(2)}
               </Text>
               <Text style={styles.transactionCategory}>{item.category}</Text>
             </View>

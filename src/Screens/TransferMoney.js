@@ -10,13 +10,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  ActivityIndicator,Modal
+  ActivityIndicator
 } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
 import { useNavigation,useRoute } from "@react-navigation/native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useApi } from "../hooks/useApi"
-import PaymentWebView from "../Modals/paymentModal"
 
 export default function TransferMoneyScreen() {
     const route = useRoute();
@@ -27,9 +26,7 @@ export default function TransferMoneyScreen() {
   const navigation=useNavigation()
   const [accountNumber, setAccountNumber] = useState(account_number)
   const [bankName, setBankName] = useState(bank_name)
- const { loading, error, data, callApi } = useApi('http://192.168.74.1/lincpay_backend/api/payment_api.php?action=transfer', 'POST');
- const [paymentUrl, setPaymentUrl] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
+ const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/payment_api.php?action=transfermoney', 'POST');
 
  const handleTransfer = async () => {
     if (!amount || Number.parseFloat(amount) <= 0) {
@@ -60,24 +57,20 @@ export default function TransferMoneyScreen() {
 
       const payload = {
         amount: Number.parseFloat(amount),
-        accountNumber,
-        bankName,
         note,
         user_id,
         semester,
         email,
         fee_name,
-        payment_type:'out'
       };
 
       const response = await callApi({ payload });
        console.log('response', response);
        
       if (response && response.status === 'success') {
-         setPaymentUrl(response.data.authorization_url);
-      setModalVisible(true);
         setAmount('');
         setNote('');
+        Alert.alert("Success", response?.message || "Transfer Success");
       } else {
         Alert.alert("Error", response?.message || "Transfer failed");
       }
@@ -117,7 +110,7 @@ export default function TransferMoneyScreen() {
                   placeholderTextColor="#999"
                 />
               </View>
-              <Text style={styles.balanceText}>Available Balance: ₦1,245.80</Text>
+              {/* <Text style={styles.balanceText}>Available Balance: ₦1,245.80</Text> */}
             </View>
 
             <View style={styles.quickAmountContainer}>
@@ -233,14 +226,7 @@ export default function TransferMoneyScreen() {
               </Text>
             </View>
           </View>
-           {modalVisible && (
-        <PaymentWebView 
-          visible={modalVisible} 
-          url={paymentUrl} 
-          onClose={() => setModalVisible(false)}
-          // verifyPayment={verifyPayment} 
-        />
-      )}
+         
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

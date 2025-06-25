@@ -96,7 +96,7 @@ const handleSave = async () => {
         }
 
 
-        const response = await fetch('http://192.168.74.1/lincpay_backend/api/user_api.php?action=update_profile', {
+        const response = await fetch('http://192.168.209.1:8080/lincpay_backend/api/user_api.php?action=update_profile', {
           method: 'POST',
           body: formData,
           headers: {
@@ -231,7 +231,7 @@ const pickImage = async () => {
   {localProfileImage ? (
     <Image source={{ uri: localProfileImage }} style={styles.profileImage} />
   ) : user?.profile_image ? (
-    <Image source={{ uri: `http://192.168.74.1/lincpay_backend/Student_images/${user?.profile_image}` }} style={styles.profileImage} />
+    <Image source={{ uri: `http://192.168.209.1:8080/lincpay_backend/Student_images/${user?.profile_image}` }} style={styles.profileImage} />
   ) : (
     <View style={styles.profileImagePlaceholder}>
       <Text style={styles.profileInitials}>{user?.full_name.charAt(0)}</Text>

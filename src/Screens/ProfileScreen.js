@@ -52,14 +52,14 @@ useEffect(() => {
     <ScrollView style={styles.screenContainer}>
       <View style={styles.profileHeader}>
         <View style={styles.profileImageContainer}>
-          <Image source={{ uri: `http://192.168.74.1/lincpay_backend/Student_images/${user.profile_image}` }} style={styles.profileImage} />
+          <Image source={{ uri: `http://192.168.209.1:8080/lincpay_backend/Student_images/${user.profile_image}` }} style={styles.profileImage} />
           <TouchableOpacity style={styles.editProfileButton} onPress={()=>navigation.navigate('PersonalInfoScreen')}>
             <FontAwesome name="pencil" size={16} color="#fff" />
           </TouchableOpacity>
         </View>
         <Text style={styles.profileName}>{user.full_name}</Text>
         <Text style={styles.profileEmail}>{user.email}</Text>
-        <View style={styles.profileStats}>
+        {/* <View style={styles.profileStats}>
           <View style={styles.profileStat}>
             <Text style={styles.profileStatValue}>$1,245.80</Text>
             <Text style={styles.profileStatLabel}>Balance</Text>
@@ -69,7 +69,7 @@ useEffect(() => {
             <Text style={styles.profileStatValue}>24</Text>
             <Text style={styles.profileStatLabel}>Transactions</Text>
           </View>
-        </View>
+        </View> */}
       </View>
 
       <View style={styles.profileSection}>

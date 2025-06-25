@@ -36,9 +36,8 @@ const RecentTransactions = [
 
   const QuickActions = [
     { id: '1', icon: 'credit-card', label: 'Add Money', screen: 'AddMoneyScreen' },
-    { id: '2', icon: 'bank', label: 'Withdraw', screen: 'WithdrawMoneyScreen' },
-    { id: '3', icon: 'history', label: 'History', screen: 'transactions' },
-    { id: '4', icon: 'cog', label: 'Settings', screen: 'profile' }, // <-- fixed here
+    { id: '2', icon: 'history', label: 'History', screen: 'transactions' },
+    { id: '3', icon: 'cog', label: 'Settings', screen: 'profile' }, // <-- fixed here
   ];  
   const PaymentOptions = [
     { id: "1", title: "School Fee", icon: "school",account_number:'0081239048',bank_name:'Sterling Bank',medicine_account_number:'0082379840' },

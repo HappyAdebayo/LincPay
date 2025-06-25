@@ -1,12 +1,16 @@
 import { useState, useRef, useEffect } from "react"
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert,Platform } from "react-native"
-import { useNavigation } from "@react-navigation/native"
+import { useNavigation,useRoute } from "@react-navigation/native"
+import { useApi } from "../hooks/useApi"
 
 export default function VerifyCode() {
   const [code, setCode] = useState(["", "", "", ""])
   const inputRefs = useRef([])
+  const route=useRoute();
+  const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/user_api.php?action=resend_reset_password', 'POST');
   const navigation=useNavigation()
-
+  const { email } = route.params;
+  
   useEffect(() => {
     inputRefs.current = inputRefs.current.slice(0, 4)
   }, [])
@@ -29,21 +33,39 @@ export default function VerifyCode() {
     }
   }
 
-  const handleVerifyCode = () => {
-    const verificationCode = code.join("")
+const handleVerifyCode = () => {
+  const verificationCode = code.join("");
 
-    if (verificationCode.length !== 4) {
-      Alert.alert("Invalid Code", "Please enter all 4 digits of your verification code")
-      return
-    }
-
-    navigation.navigate('ResetPasswordScreen')
-    console.log({ verificationCode })
-    Alert.alert("Success", "Your email has been verified successfully!")
+  if (verificationCode.length !== 4) {
+    Alert.alert("Invalid Code", "Please enter all 4 digits of your verification code");
+    return;
   }
 
-  const handleResendCode = () => {
-    Alert.alert("Code Resent", "A new verification code has been sent to your email")
+  navigation.navigate('ResetPasswordScreen', { code: verificationCode });
+};
+
+
+  const handleResendCode = async () => {
+
+          try {
+     
+      const payload = {
+        email
+      };
+
+      const response = await callApi({ payload });
+       console.log('response', response);
+       
+      if (response && response.status === 'success') {
+        Alert.alert("Success", response?.message || "Transfer Success");
+      } else {
+        Alert.alert("Error", response?.message || "Transfer failed");
+      }
+    } catch (e) {
+      Alert.alert("Error", "An unexpected error occurred.");
+      console.error(e);
+    }
+    
   }
 
   return (
@@ -52,9 +74,9 @@ export default function VerifyCode() {
         <View style={styles.formContainer}>
           <View style={styles.topLeftCorner} />
 
-          <TouchableOpacity style={styles.loginLink} onPress={()=>navigation.navigate('Login')}>
+          {/* <TouchableOpacity style={styles.loginLink} onPress={()=>navigation.navigate('Login')}>
             <Text style={styles.loginLinkText}>LOGIN</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <View style={styles.content}>
             <Text style={styles.title}>Enter Code</Text>
@@ -80,7 +102,7 @@ export default function VerifyCode() {
               <Text style={styles.buttonText}>VERIFY</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.resendContainer} onPress={handleResendCode}>
+            <TouchableOpacity style={styles.resendContainer} onPress={handleResendCode} disabled={loading}>
               <Text style={styles.resendText}>
                 Didn't receive a code? <Text style={styles.resendLink}>Resend</Text>
               </Text>

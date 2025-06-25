@@ -29,8 +29,8 @@ export default function SecurityScreen() {
   const [confirmPassword, setConfirmPassword] = useState("")
 
   const [verificationCode, setVerificationCode] = useState("")
-  const { callApi, loading, error, data } = useApi('http://192.168.74.1/lincpay_backend/api/user_api.php?action=change_password', 'POST');
-  const { callApi: callApi2fa, loading: loading2fa, error: error2fa, data: data2fa } = useApi('http://192.168.74.1/lincpay_backend/api/auth_api.php?action=create_2fa', 'POST');
+  const { callApi, loading, error, data } = useApi('http://192.168.209.1:8080/lincpay_backend/api/user_api.php?action=change_password', 'POST');
+  const { callApi: callApi2fa, loading: loading2fa, error: error2fa, data: data2fa } = useApi('http://192.168.209.1:8080/lincpay_backend/api/auth_api.php?action=create_2fa', 'POST');
 
   useEffect(() => {
     const fetchIs2FA = async () => {
@@ -66,11 +66,8 @@ export default function SecurityScreen() {
             text: "Disable",
             style: "destructive",
             onPress: () => {
-              setTwoFactorEnabled(false)
-              Alert.alert(
-                "Two-Factor Authentication Disabled",
-                "Two-factor authentication has been disabled for your account.",
-              )
+              handleDisableTwoFactor()
+              
             },
           },
         ],
@@ -149,7 +146,8 @@ const handleSetupTwoFactor = async () => {
       Alert.alert('Error', 'User not found in storage');
       return;
     }
-
+    console.log('verification code', verificationCode);
+    
     const payload = {
       user_id,
       verificationCode: verificationCode.trim(),
@@ -158,6 +156,9 @@ const handleSetupTwoFactor = async () => {
     const result = await callApi2fa({ payload });
 
     if (result?.status === 'success') {
+      const updatedUser = { ...parsedUser, is_2fa: 1 };
+      await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+
       Alert.alert("Two-Factor Authentication Enabled", "Your account is now protected with two-factor authentication.", [
         {
           text: "OK",
@@ -176,6 +177,7 @@ const handleSetupTwoFactor = async () => {
   }
 };
 
+
 const handleDisableTwoFactor = async () => {
     try {
       const userData = await AsyncStorage.getItem('user');
@@ -186,7 +188,7 @@ const handleDisableTwoFactor = async () => {
 
       const user = JSON.parse(userData);
 
-      const response = await fetch('http://your-backend-url/api.php?action=delete_2fa', {
+      const response = await fetch('http://192.168.209.1:8080/lincpay_backend/api/auth_api.php?action=delete_2fa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.id }),
@@ -195,6 +197,7 @@ const handleDisableTwoFactor = async () => {
       const result = await response.json();
 
       if (result.status === 'success') {
+        setTwoFactorEnabled(false)
         const updatedUser = { ...user, is_2fa: 0 };
         await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
         setTwoFactorEnabled(false);

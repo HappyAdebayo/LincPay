@@ -9,7 +9,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("")
   const navigation=useNavigation()
 
-  const { loading, data, callApi } = useApi('http://192.168.74.1/lincpay_backend/api/auth_api.php?action=login', 'POST');
+  const { loading, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/auth_api.php?action=login', 'POST');
 
   const handleLogin =async () => {
     if (!username || !password) {
@@ -23,9 +23,15 @@ export default function LoginScreen() {
     console.log(response);
     
     if (response?.status === 'success') {
-       await AsyncStorage.setItem('user', JSON.stringify(response.user));
-       Alert.alert('Success', 'Login successful!');
-       navigation.replace('BottomTab')
+       if (response?.user?.is_2fa == 1) {
+          console.log("✅ User has 2FA enabled");
+          await AsyncStorage.setItem('user_id', String(response.user.id));
+          navigation.navigate('Auth');
+        }else{
+        await AsyncStorage.setItem('user', JSON.stringify(response.user));
+        Alert.alert('Success', 'Login successful!');
+        navigation.replace('BottomTab')
+      }
     }else if(response?.status =="not_validated"){
        try {
       await AsyncStorage.setItem('user_id', String(response.user_id));

@@ -2,23 +2,37 @@ import { useState } from "react"
 import { StyleSheet,Platform, View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
+import { useApi } from "../hooks/useApi"
 
 export default function ResetEmailScreen() {
   const [email, setEmail] = useState("")
   const navigation=useNavigation()
+  const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/user_api.php?action=reset_password', 'POST');
   
-  const handleSendCode = () => {
-    navigation.navigate('VerifyResetCode')
-
-    if (!email || !email.includes("@")) {
-      Alert.alert("Invalid Email", "Please enter a valid email address")
-      return
-    }
-
-    console.log({ email })
-    navigation.navigate('VerifyResetCode')
-    Alert.alert("Verification Code Sent", `A verification code has been sent to ${email}. Please check your inbox.`)
+const handleSendCode = async () => {
+  if (!email || !email.includes("@")) {
+    Alert.alert("Invalid Email", "Please enter a valid email address");
+    return;
   }
+
+  try {
+    const payload = { email };
+    const response = await callApi({ payload }); // Make sure this is POST
+
+    console.log('response', response);
+
+    if (response?.status === 'success') {
+      Alert.alert("Verification Code Sent", response.message || "Code sent successfully");
+      navigation.navigate('VerifyResetCode', { email });
+    } else {
+      Alert.alert("Error", response?.message || "Request failed");
+    }
+  } catch (error) {
+    console.error("Send Code Error:", error);
+    Alert.alert("Error", "An unexpected error occurred.");
+  }
+};
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -49,7 +63,7 @@ export default function ResetEmailScreen() {
                 />
               </View>
 
-              <TouchableOpacity style={styles.button} onPress={handleSendCode}>
+              <TouchableOpacity style={styles.button} onPress={handleSendCode} disabled={loading}>
                 <Text style={styles.buttonText}>SEND VERIFICATION CODE</Text>
               </TouchableOpacity>
             </View>

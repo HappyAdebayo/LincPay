@@ -1,16 +1,20 @@
 import { StyleSheet, View, Text,Platform, TouchableOpacity, ScrollView} from "react-native"
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons"
-import {RecentTransactions, QuickActions} from "../Data/Data";
+import { QuickActions} from "../Data/Data";
 import { PaymentOptions } from "../Data/Data";
 import { useNavigation } from "@react-navigation/native";
 import { useState,useEffect } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useApi } from "../hooks/useApi";
 
 export default HomeScreen = ({ setActiveTab }) => {
+  
   const navigation = useNavigation()
+  const [amount, setAmount] = useState(0)
   
   const [username, setUsername] = useState('');
-
+ const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/payment_api.php?action=userbalance', 'POST');
+  
   useEffect(() => {
     const fetchUsername = async () => {
       try {
@@ -26,6 +30,44 @@ export default HomeScreen = ({ setActiveTab }) => {
 
     fetchUsername();
   }, []);
+
+    useEffect(() => {
+    const fetchUserBalance = async () => {
+      try {
+        const userDataJSON = await AsyncStorage.getItem('user');
+      if (!userDataJSON) {
+        Alert.alert("User data missing", "Please login again.");
+        return;
+      }
+      const userData = JSON.parse(userDataJSON);
+      console.log('userdata',userData);
+      
+      const user_id = userData.id;
+
+      if (!user_id) {
+        Alert.alert("User ID missing", "Please login again.");
+        return;
+      }
+
+        const payload = {
+        user_id
+      };
+
+      const response = await callApi({ payload });
+             
+            if (response && response.status === 'success') {
+              setAmount(response.balance);
+            } else {
+              Alert.alert("Error", response?.message || "Transfer failed");
+            }
+
+      } catch (error) {
+        console.error('Failed to load username', error);
+      }
+    };
+
+    fetchUserBalance();
+  }, []); 
 
   const handleQuickAction = (action) => {
     if (action.screen === 'transactions' || action.screen === 'profile') {
@@ -53,8 +95,8 @@ export default HomeScreen = ({ setActiveTab }) => {
         <View style={styles.balanceTopCorner} />
         <View style={styles.balanceContent}>
           <Text style={styles.balanceLabel}>Total Balance</Text>
-          <Text style={styles.balanceAmount}>$1,245.80</Text>
-          <View style={styles.balanceActions}>
+          <Text style={styles.balanceAmount}>₦{amount}</Text>
+          {/* <View style={styles.balanceActions}>
             <TouchableOpacity style={styles.balanceActionButton} onPress={()=>navigation.navigate('TransferMoneyScreen')}>
               <FontAwesome name="arrow-up" size={16} color="#fff" />
               <Text style={styles.balanceActionText}>Send</Text>
@@ -63,7 +105,7 @@ export default HomeScreen = ({ setActiveTab }) => {
               <FontAwesome name="arrow-down" size={16} color="#fff" />
               <Text style={styles.balanceActionText}>Request</Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
         </View>
       </View>
 
@@ -99,7 +141,7 @@ export default HomeScreen = ({ setActiveTab }) => {
         </View>
       </View>
 
-      <View style={styles.recentTransactionsContainer}>
+      {/* <View style={styles.recentTransactionsContainer}>
         <View style={styles.sectionTitleRow}>
           <Text style={styles.sectionTitle}>Recent Transactions</Text>
           <TouchableOpacity onPress={() => setActiveTab("transactions")}>
@@ -127,11 +169,11 @@ export default HomeScreen = ({ setActiveTab }) => {
                 },
               ]}
             >
-              {transaction.type === "expense" ? "-" : "+"}${Math.abs(transaction.amount).toFixed(2)}
+              {transaction.type === "expense" ? "-" : "+"}₦{Math.abs(transaction.amount).toFixed(2)}
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </View> */}
 
       {/* Financial Tips */}
       <View style={styles.tipsContainer}>

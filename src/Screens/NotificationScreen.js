@@ -1,26 +1,101 @@
-import { useState } from "react"
-import { StyleSheet, View, Platform, Text, TouchableOpacity, SafeAreaView, ScrollView, FlatList } from "react-native"
+import { useState,useEffect } from "react"
+import { StyleSheet, View, Platform, Text, TouchableOpacity, SafeAreaView, ScrollView, FlatList,Alert } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
-import { NotificationsData } from "../Data/Data"
+// import { NotificationsData } from "../Data/Data"
 import { useNavigation } from "@react-navigation/native"
+import { useApi } from "../hooks/useApi"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
 export default function NotificationScreen() {
-  const [notifications, setNotifications] = useState(NotificationsData)
+  const [notifications, setNotifications] = useState()
   const [activeFilter, setActiveFilter] = useState("all")
   const navigation=useNavigation()
-  const unreadCount = notifications.filter((notification) => !notification.read).length
+  const unreadCount = notifications?.filter((notification) => !notification.read)?.length
+  const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/user_api.php?action=get_notification', 'POST');
+  const { loading2, error2, data2, callApi: callApi2} = useApi('http://192.168.209.1:8080/lincpay_backend/api/user_api.php?action=mark_has_read', 'POST');
 
-  const filteredNotifications = notifications.filter((notification) => {
+
+     useEffect(() => {
+    const fetchUserNotification = async () => {
+      try {
+        const userDataJSON = await AsyncStorage.getItem('user');
+      if (!userDataJSON) {
+        Alert.alert("User data missing", "Please login again.");
+        return;
+      }
+      const userData = JSON.parse(userDataJSON);
+      console.log('userdata',userData);
+      
+      const user_id = userData.id;
+
+      if (!user_id) {
+        Alert.alert("User ID missing", "Please login again.");
+        return;
+      }
+
+        const payload = {
+        user_id
+      };
+
+      const response = await callApi({ payload });
+             
+            if (response && response.status === 'success') {
+              console.log('notification', response.data);
+              
+              setNotifications(response.data);
+            } else {
+              Alert.alert("Error", response?.message || "Transfer failed");
+            }
+
+      } catch (error) {
+        console.error('Failed to load username', error);
+      }
+    };
+
+    fetchUserNotification();
+  }, []); 
+
+  const filteredNotifications = notifications?.filter((notification) => {
     if (activeFilter === "all") return true
     return notification.type === activeFilter
   })
 
-  const markAllAsRead = () => {
-    const updatedNotifications = notifications.map((notification) => ({
-      ...notification,
-      read: true,
-    }))
-    setNotifications(updatedNotifications)
+  const markAllAsRead = async () => {
+     try {
+        const userDataJSON = await AsyncStorage.getItem('user');
+      if (!userDataJSON) {
+        Alert.alert("User data missing", "Please login again.");
+        return;
+      }
+      const userData = JSON.parse(userDataJSON);
+      console.log('userdata',userData);
+      
+      const user_id = userData.id;
+
+      if (!user_id) {
+        Alert.alert("User ID missing", "Please login again.");
+        return;
+      }
+
+        const payload = {
+        user_id
+      };
+
+      const response = await callApi2({ payload });
+             
+            if (response && response.status === 'success') {
+              const updatedNotifications = notifications?.map((notification) => ({
+                  ...notification,
+                  read: true,
+                }))
+                setNotifications(updatedNotifications)
+            } else {
+              Alert.alert("Error", response?.message || "Transfer failed");
+            }
+
+      } catch (error) {
+        console.error('Failed to load username', error);
+      }
   }
 
   const markAsRead = (id) => {
@@ -32,13 +107,13 @@ export default function NotificationScreen() {
 
   const getNotificationIcon = (type) => {
     switch (type) {
-      case "transaction":
+      case "resolved":
         return <FontAwesome name="money" size={20} color="#dc2626" />
-      case "alert":
+      case "in_progress":
         return <FontAwesome name="exclamation-circle" size={20} color="#f59e0b" />
-      case "promo":
+      case "closed":
         return <FontAwesome name="tag" size={20} color="#8b5cf6" />
-      case "system":
+      case "approved":
         return <FontAwesome name="cog" size={20} color="#3b82f6" />
       default:
         return <FontAwesome name="bell" size={20} color="#dc2626" />
@@ -93,35 +168,35 @@ export default function NotificationScreen() {
             <Text style={[styles.filterText, activeFilter === "all" && styles.activeFilterText]}>All</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.filterButton, activeFilter === "transaction" && styles.activeFilterButton]}
-            onPress={() => setActiveFilter("transaction")}
+            style={[styles.filterButton, activeFilter === "resolved" && styles.activeFilterButton]}
+            onPress={() => setActiveFilter("resolved")}
           >
-            <Text style={[styles.filterText, activeFilter === "transaction" && styles.activeFilterText]}>
-              Transactions
+            <Text style={[styles.filterText, activeFilter === "resolved" && styles.activeFilterText]}>
+              Resolved
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.filterButton, activeFilter === "alert" && styles.activeFilterButton]}
-            onPress={() => setActiveFilter("alert")}
+            style={[styles.filterButton, activeFilter === "in_progress" && styles.activeFilterButton]}
+            onPress={() => setActiveFilter("in_progress")}
           >
-            <Text style={[styles.filterText, activeFilter === "alert" && styles.activeFilterText]}>Alerts</Text>
+            <Text style={[styles.filterText, activeFilter === "in_progress" && styles.activeFilterText]}>In_progress</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.filterButton, activeFilter === "promo" && styles.activeFilterButton]}
-            onPress={() => setActiveFilter("promo")}
+            style={[styles.filterButton, activeFilter === "closed" && styles.activeFilterButton]}
+            onPress={() => setActiveFilter("closed")}
           >
-            <Text style={[styles.filterText, activeFilter === "promo" && styles.activeFilterText]}>Promotions</Text>
+            <Text style={[styles.filterText, activeFilter === "closed" && styles.activeFilterText]}>Closed</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.filterButton, activeFilter === "system" && styles.activeFilterButton]}
-            onPress={() => setActiveFilter("system")}
+            style={[styles.filterButton, activeFilter === "approved" && styles.activeFilterButton]}
+            onPress={() => setActiveFilter("approved")}
           >
-            <Text style={[styles.filterText, activeFilter === "system" && styles.activeFilterText]}>System</Text>
+            <Text style={[styles.filterText, activeFilter === "approved" && styles.activeFilterText]}>Approved</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
 
-      {filteredNotifications.length > 0 ? (
+      {filteredNotifications?.length > 0 ? (
         <FlatList
           data={filteredNotifications}
           renderItem={renderNotificationItem}
