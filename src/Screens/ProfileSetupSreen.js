@@ -145,6 +145,14 @@ const handleSubmit = async () => {
     }
 
     if (json?.status === 'success') {
+      const errorMessage =
+        json.errors?.image ||
+        json.errors?.fullName ||
+        json.errors?.studentId ||
+        json.errors?.semester ||
+        json.errors?.email ||
+        "An unknown error occurred.";
+
       Alert.alert(
         "Profile Setup Complete",
         "Your profile has been successfully set up. You can now use all features of Lincpay.",
@@ -159,7 +167,7 @@ const handleSubmit = async () => {
         ],
       );
     } else {
-      Alert.alert("Error", json.errors?.image);
+      Alert.alert("Error", errorMessage);
       console.log("Validation Errors:", json.errors);
     }
 
