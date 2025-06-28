@@ -7,7 +7,7 @@ import { useApi } from "../hooks/useApi"
 export default function ResetEmailScreen() {
   const [email, setEmail] = useState("")
   const navigation=useNavigation()
-  const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/user_api.php?action=reset_password', 'POST');
+  const { loading, error, data, callApi } = useApi('http://192.168.155.1:8080/lincpay_backend/api/user_api.php?action=reset_password', 'POST');
   
 const handleSendCode = async () => {
   if (!email || !email.includes("@")) {

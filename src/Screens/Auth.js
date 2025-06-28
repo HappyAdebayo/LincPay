@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 export default function Auth() {
   const [code, setCode] = useState(['', '', '', '']);
   const inputs = useRef([]);
-  const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/auth_api.php?action=validate_2fa_code', 'POST');
+  const { loading, error, data, callApi } = useApi('http://192.168.155.1:8080/lincpay_backend/api/auth_api.php?action=validate_2fa_code', 'POST');
   const navigation =useNavigation()
   const handleChange = (text, index) => {
     const newCode = [...code];

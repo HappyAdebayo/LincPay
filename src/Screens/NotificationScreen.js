@@ -11,8 +11,8 @@ export default function NotificationScreen() {
   const [activeFilter, setActiveFilter] = useState("all")
   const navigation=useNavigation()
   const unreadCount = notifications?.filter((notification) => !notification.read)?.length
-  const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/user_api.php?action=get_notification', 'POST');
-  const { loading2, error2, data2, callApi: callApi2} = useApi('http://192.168.209.1:8080/lincpay_backend/api/user_api.php?action=mark_has_read', 'POST');
+  const { loading, error, data, callApi } = useApi('http://192.168.155.1:8080/lincpay_backend/api/user_api.php?action=get_notification', 'POST');
+  const { loading2, error2, data2, callApi: callApi2} = useApi('http://192.168.155.1:8080/lincpay_backend/api/user_api.php?action=mark_has_read', 'POST');
 
 
      useEffect(() => {

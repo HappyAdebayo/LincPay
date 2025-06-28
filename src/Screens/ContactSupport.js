@@ -22,7 +22,7 @@ export default function ContactSupportScreen() {
   const navigation=useNavigation()
 
 
- const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/user_api.php?action=complaint', 'POST');
+ const { loading, error, data, callApi } = useApi('http://192.168.155.1:8080/lincpay_backend/api/user_api.php?action=complaint', 'POST');
 
   const handleSubmit = async () => {
     try {

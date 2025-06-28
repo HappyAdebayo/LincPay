@@ -6,7 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 
 export default TransactionsScreen = () => {
   const [selectedFilter, setSelectedFilter] = useState("all");
-  const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/user_api.php?action=get_transactions', 'POST');
+  const { loading, error, data, callApi } = useApi('http://192.168.155.1:8080/lincpay_backend/api/user_api.php?action=get_transactions', 'POST');
   const [recentTransactions, setRecentTransactions]=useState([]);
   const filteredTransactions = recentTransactions.filter((item) => {
     if (selectedFilter === "all") {

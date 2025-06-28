@@ -13,7 +13,7 @@ export default HomeScreen = ({ setActiveTab }) => {
   const [amount, setAmount] = useState(0)
   
   const [username, setUsername] = useState('');
- const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/payment_api.php?action=userbalance', 'POST');
+ const { loading, error, data, callApi } = useApi('http://192.168.155.1:8080/lincpay_backend/api/payment_api.php?action=userbalance', 'POST');
   
   useEffect(() => {
     const fetchUsername = async () => {

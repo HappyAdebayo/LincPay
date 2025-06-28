@@ -26,7 +26,7 @@ export default function TransferMoneyScreen() {
   const navigation=useNavigation()
   const [accountNumber, setAccountNumber] = useState(account_number)
   const [bankName, setBankName] = useState(bank_name)
- const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/payment_api.php?action=transfermoney', 'POST');
+ const { loading, error, data, callApi } = useApi('http://192.168.155.1:8080/lincpay_backend/api/payment_api.php?action=transfermoney', 'POST');
 
  const handleTransfer = async () => {
     if (!amount || Number.parseFloat(amount) <= 0) {

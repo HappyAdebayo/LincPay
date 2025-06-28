@@ -11,7 +11,7 @@ export default function ResetPasswordScreen() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const navigation=useNavigation()
-  const { loading, error, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/user_api.php?action=reset_password_code', 'POST');
+  const { loading, error, data, callApi } = useApi('http://192.168.155.1:8080/lincpay_backend/api/user_api.php?action=reset_password_code', 'POST');
   const { code } = route.params;
 
   const handleResetPassword = async () => {

@@ -29,8 +29,8 @@ export default function SecurityScreen() {
   const [confirmPassword, setConfirmPassword] = useState("")
 
   const [verificationCode, setVerificationCode] = useState("")
-  const { callApi, loading, error, data } = useApi('http://192.168.209.1:8080/lincpay_backend/api/user_api.php?action=change_password', 'POST');
-  const { callApi: callApi2fa, loading: loading2fa, error: error2fa, data: data2fa } = useApi('http://192.168.209.1:8080/lincpay_backend/api/auth_api.php?action=create_2fa', 'POST');
+  const { callApi, loading, error, data } = useApi('http://192.168.155.1:8080/lincpay_backend/api/user_api.php?action=change_password', 'POST');
+  const { callApi: callApi2fa, loading: loading2fa, error: error2fa, data: data2fa } = useApi('http://192.168.155.1:8080/lincpay_backend/api/auth_api.php?action=create_2fa', 'POST');
 
   useEffect(() => {
     const fetchIs2FA = async () => {
@@ -188,7 +188,7 @@ const handleDisableTwoFactor = async () => {
 
       const user = JSON.parse(userData);
 
-      const response = await fetch('http://192.168.209.1:8080/lincpay_backend/api/auth_api.php?action=delete_2fa', {
+      const response = await fetch('http://192.168.155.1:8080/lincpay_backend/api/auth_api.php?action=delete_2fa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.id }),

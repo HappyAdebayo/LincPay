@@ -9,7 +9,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("")
   const navigation=useNavigation()
 
-  const { loading, data, callApi } = useApi('http://192.168.209.1:8080/lincpay_backend/api/auth_api.php?action=login', 'POST');
+  const { loading, data, callApi } = useApi('http://192.168.155.1:8080/lincpay_backend/api/auth_api.php?action=login', 'POST');
 
   const handleLogin =async () => {
     if (!username || !password) {
