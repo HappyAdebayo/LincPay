@@ -13,7 +13,7 @@ export default HomeScreen = ({ setActiveTab }) => {
   const [amount, setAmount] = useState(0)
   
   const [username, setUsername] = useState('');
- const { loading, error, data, callApi } = useApi('http://192.168.155.1:8080/lincpay_backend/api/payment_api.php?action=userbalance', 'POST');
+ const { loading, error, data, callApi } = useApi('http://192.168.77.1:8080/lincpay_backend/api/payment_api.php?action=userbalance', 'POST');
   
   useEffect(() => {
     const fetchUsername = async () => {
@@ -131,7 +131,9 @@ export default HomeScreen = ({ setActiveTab }) => {
             <TouchableOpacity key={option.id} style={styles.paymentOption} onPress={()=>navigation.navigate('TransferMoneyScreen',{
               account_number:option.account_number,
               bank_name:option.bank_name,
-              fee_name:option.title
+              fee_name:option.title,
+              account_name:option.account_name,
+              bank_code:option.bank_code
             })}>
               <View style={styles.paymentOptionIcon}>
                 <MaterialIcons name={option.icon} size={24} color="#dc2626" />

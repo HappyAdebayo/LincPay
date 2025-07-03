@@ -10,7 +10,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const navigation=useNavigation()
-const { loading, error, data, callApi } = useApi('http://192.168.155.1:8080/lincpay_backend/api/auth_api.php?action=register', 'POST');
+const { loading, error, data, callApi } = useApi('http://192.168.77.1:8080/lincpay_backend/api/auth_api.php?action=register', 'POST');
 
 const handleSignUp = async () => {
 

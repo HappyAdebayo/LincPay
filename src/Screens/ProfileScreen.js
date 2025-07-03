@@ -52,7 +52,7 @@ useEffect(() => {
     <ScrollView style={styles.screenContainer}>
       <View style={styles.profileHeader}>
         <View style={styles.profileImageContainer}>
-          <Image source={{ uri: `http://192.168.155.1:8080/lincpay_backend/Student_images/${user.profile_image}` }} style={styles.profileImage} />
+          <Image source={{ uri: `http://192.168.77.1:8080/lincpay_backend/Student_images/${user.profile_image}` }} style={styles.profileImage} />
           <TouchableOpacity style={styles.editProfileButton} onPress={()=>navigation.navigate('PersonalInfoScreen')}>
             <FontAwesome name="pencil" size={16} color="#fff" />
           </TouchableOpacity>

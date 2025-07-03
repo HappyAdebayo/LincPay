@@ -39,14 +39,65 @@ const RecentTransactions = [
     { id: '2', icon: 'history', label: 'History', screen: 'transactions' },
     { id: '3', icon: 'cog', label: 'Settings', screen: 'profile' }, // <-- fixed here
   ];  
-  const PaymentOptions = [
-    { id: "1", title: "School Fee", icon: "school",account_number:'0081239048',bank_name:'Sterling Bank',medicine_account_number:'0082379840' },
-    { id: "2", title: "Miscellaneous", icon: "list-alt",account_number:'0091812978',bank_name:'Sterling Bank' },
-    { id: "3", title: "Department Fee", icon: "domain",account_number:'0806501606',bank_name:'Access Bank' },
-    { id: "4", title: "Operational Fee", icon: "build",account_number:'6898597021',bank_name:'Fcmb'  },
-    { id: "5", title: "Exam Fee", icon: "assignment",account_number:'0091812978',bank_name:'Sterling Bank'  },
-    { id: "6", title: "Hostel Fee", icon: "home",account_number:'0602020124',bank_name:'GTB' },
-  ];
+const PaymentOptions = [
+  {
+    id: "1",
+    title: "School Fee",
+    icon: "school",
+    account_number: "0081239048",
+    bank_name: "Sterling Bank",
+    bank_code: "232",
+    medicine_account_number: "0082379840",
+    account_name: "LINCOLN COLLEGE OF SCIENCE MANAGEME",
+    medicine_account_name: "LINCOLN CONTINUING PROFESSIONAL DEV"
+  },
+  {
+    id: "2",
+    title: "Miscellaneous",
+    icon: "list-alt",
+    account_number: "0091812978",
+    bank_name: "Sterling Bank",
+    bank_code: "232",
+    account_name: "LINCOLN COLLEGE OF SCIENCE MANAGEME"
+  },
+  {
+    id: "3",
+    title: "Department Fee",
+    icon: "domain",
+    account_number: "0806501606",
+    bank_name: "Access Bank",
+    bank_code: "044",
+    account_name: "LINCOLN COLLEGE OF SCIENCE MANAGEMENT AND TECHNOLOGY LTD"
+  },
+  {
+    id: "4",
+    title: "Operational Fee",
+    icon: "build",
+    account_number: "6898597021",
+    bank_name: "Fcmb",
+    bank_code: "214",
+    account_name: "LINCOLN COLLEGE OF SCIENCE MANAGEMENT AND TECHNOLOGY LIMITED"
+  },
+  {
+    id: "5",
+    title: "Exam Fee",
+    icon: "assignment",
+    account_number: "0091812978",
+    bank_name: "Sterling Bank",
+    bank_code: "232",
+    account_name: "LINCOLN COLLEGE OF SCIENCE MANAGEME"
+  },
+  {
+    id: "6",
+    title: "Hostel Fee",
+    icon: "home",
+    account_number: "0602020124",
+    bank_name: "GTB",
+    bank_code: "058",
+    account_name: "LINCOLN LOGISTICS SERV COY LTD"
+  }
+];
+
   
   const NotificationsData = [
     {

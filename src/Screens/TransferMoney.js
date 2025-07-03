@@ -19,14 +19,14 @@ import { useApi } from "../hooks/useApi"
 
 export default function TransferMoneyScreen() {
     const route = useRoute();
-  const { account_number, bank_name,fee_name } = route.params;
+  const { account_number, bank_name,fee_name,account_name, bank_code } = route.params;
   const [amount, setAmount] = useState("")
   const [note, setNote] = useState("")
   const [semester, setSemester] = useState("")
   const navigation=useNavigation()
   const [accountNumber, setAccountNumber] = useState(account_number)
   const [bankName, setBankName] = useState(bank_name)
- const { loading, error, data, callApi } = useApi('http://192.168.155.1:8080/lincpay_backend/api/payment_api.php?action=transfermoney', 'POST');
+ const { loading, error, data, callApi } = useApi('http://192.168.77.1:8080/lincpay_backend/api/payment_api.php?action=transfermoney', 'POST');
 
  const handleTransfer = async () => {
     if (!amount || Number.parseFloat(amount) <= 0) {
@@ -34,10 +34,31 @@ export default function TransferMoneyScreen() {
       return;
     }
 
+
      if (!semester) {
-      Alert.alert("Error", "Semester is required");
-      return;
-    }
+    Alert.alert("Missing Semester", "Semester is required.");
+    return;
+  }
+
+  if (!account_number || account_number.trim() === "") {
+    Alert.alert("Missing Account Number", "The destination account number is required.");
+    return;
+  }
+
+  if (!bank_code || bank_code.trim() === "") {
+    Alert.alert("Missing Bank Code", "The bank code is required.");
+    return;
+  }
+
+  if (!account_name || account_name.trim() === "") {
+    Alert.alert("Missing Account Name", "The recipient account name is required.");
+    return;
+  }
+
+  if (!fee_name || fee_name.trim() === "") {
+    Alert.alert("Missing Fee Name", "Fee name is required.");
+    return;
+  }
 
     try {
       const userDataJSON = await AsyncStorage.getItem('user');
@@ -62,6 +83,9 @@ export default function TransferMoneyScreen() {
         semester,
         email,
         fee_name,
+        account_number,
+        receipient_name: account_name,
+        bank_code
       };
 
       const response = await callApi({ payload });

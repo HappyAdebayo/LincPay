@@ -124,7 +124,7 @@ const handleSubmit = async () => {
       });
     }
 
-    const response = await fetch("http://192.168.155.1:8080/lincpay_backend/api/auth_api.php?action=studentdetails", {
+    const response = await fetch("http://192.168.77.1:8080/lincpay_backend/api/auth_api.php?action=studentdetails", {
       method: 'POST',
       body: formData,
       headers: {

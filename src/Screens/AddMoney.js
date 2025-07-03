@@ -20,7 +20,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 export default function AddMoneyScreen() {
   const [amount, setAmount] = useState("")
   const navigation=useNavigation()
-  const { loading, error, data, callApi } = useApi('http://192.168.155.1:8080/lincpay_backend/api/payment_api.php?action=transfer', 'POST');
+  const { loading, error, data, callApi } = useApi('http://192.168.77.1:8080/lincpay_backend/api/payment_api.php?action=transfer', 'POST');
   const [paymentUrl, setPaymentUrl] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
